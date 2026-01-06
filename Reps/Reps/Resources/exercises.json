@@ -1,0 +1,821 @@
+[
+  {
+    "id": "barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "muscleGroups": ["quads", "glutes", "hamstrings"],
+    "equipment": "barbell",
+    "instructions": "1. Position the barbell on your upper back\n2. Stand with feet shoulder-width apart\n3. Descend by pushing hips back and bending knees\n4. Lower until thighs are parallel to floor\n5. Drive through heels to return to standing"
+  },
+  {
+    "id": "front-squat",
+    "name": "Front Squat",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "barbell",
+    "instructions": "1. Rest barbell on front deltoids\n2. Keep elbows high throughout\n3. Descend keeping torso upright\n4. Drive through heels to stand"
+  },
+  {
+    "id": "goblet-squat",
+    "name": "Goblet Squat",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "dumbbell",
+    "instructions": "1. Hold dumbbell at chest level\n2. Squat between legs\n3. Keep chest tall\n4. Drive up to standing"
+  },
+  {
+    "id": "bulgarian-split-squat",
+    "name": "Bulgarian Split Squat",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "dumbbell",
+    "instructions": "1. Place rear foot on bench\n2. Lower until rear knee nearly touches floor\n3. Drive through front heel to stand"
+  },
+  {
+    "id": "walking-lunge",
+    "name": "Walking Lunge",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "dumbbell",
+    "instructions": "1. Step forward into lunge\n2. Lower rear knee toward floor\n3. Push off front foot\n4. Step through to next lunge"
+  },
+  {
+    "id": "reverse-lunge",
+    "name": "Reverse Lunge",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "dumbbell",
+    "instructions": "1. Step backward into lunge\n2. Lower rear knee toward floor\n3. Push off rear foot to return"
+  },
+  {
+    "id": "step-up",
+    "name": "Step Up",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "dumbbell",
+    "instructions": "1. Stand facing box or bench\n2. Step up with one foot\n3. Drive through heel to stand tall\n4. Step back down with control"
+  },
+  {
+    "id": "bench-press",
+    "name": "Bench Press",
+    "muscleGroups": ["chest", "shoulders", "triceps"],
+    "equipment": "barbell",
+    "instructions": "1. Lie on bench with eyes under bar\n2. Grip bar slightly wider than shoulder width\n3. Unrack and lower bar to mid-chest\n4. Press bar back up to starting position"
+  },
+  {
+    "id": "incline-bench-press",
+    "name": "Incline Bench Press",
+    "muscleGroups": ["chest", "shoulders"],
+    "equipment": "barbell",
+    "instructions": "1. Set bench to 30-45 degree incline\n2. Grip bar slightly wider than shoulders\n3. Lower to upper chest\n4. Press to lockout"
+  },
+  {
+    "id": "decline-bench-press",
+    "name": "Decline Bench Press",
+    "muscleGroups": ["chest", "triceps"],
+    "equipment": "barbell",
+    "instructions": "1. Set bench to decline position\n2. Secure feet under pads\n3. Lower bar to lower chest\n4. Press to lockout"
+  },
+  {
+    "id": "close-grip-bench-press",
+    "name": "Close Grip Bench Press",
+    "muscleGroups": ["triceps", "chest"],
+    "equipment": "barbell",
+    "instructions": "1. Grip bar at shoulder width or narrower\n2. Keep elbows close to body\n3. Lower to lower chest\n4. Press to lockout"
+  },
+  {
+    "id": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "muscleGroups": ["chest", "shoulders", "triceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Lie on bench with dumbbells\n2. Press dumbbells up\n3. Lower with control\n4. Keep slight arch in back"
+  },
+  {
+    "id": "incline-dumbbell-press",
+    "name": "Incline Dumbbell Press",
+    "muscleGroups": ["chest", "shoulders"],
+    "equipment": "dumbbell",
+    "instructions": "1. Set bench to 30-45 degree incline\n2. Hold dumbbells at shoulder level\n3. Press dumbbells up and together\n4. Lower with control"
+  },
+  {
+    "id": "deadlift",
+    "name": "Deadlift",
+    "muscleGroups": ["back", "hamstrings", "glutes"],
+    "equipment": "barbell",
+    "instructions": "1. Stand with feet hip-width apart\n2. Bend at hips and knees to grip bar\n3. Keep back flat and chest up\n4. Drive through heels and extend hips\n5. Stand tall with bar at thighs"
+  },
+  {
+    "id": "sumo-deadlift",
+    "name": "Sumo Deadlift",
+    "muscleGroups": ["glutes", "quads", "back"],
+    "equipment": "barbell",
+    "instructions": "1. Take wide stance with toes pointed out\n2. Grip bar inside legs\n3. Keep chest up and back flat\n4. Drive through legs to stand"
+  },
+  {
+    "id": "romanian-deadlift",
+    "name": "Romanian Deadlift",
+    "muscleGroups": ["hamstrings", "glutes", "lowerBack"],
+    "equipment": "barbell",
+    "instructions": "1. Hold bar at hip height\n2. Hinge at hips, pushing them back\n3. Lower bar along legs\n4. Return to standing by extending hips"
+  },
+  {
+    "id": "stiff-leg-deadlift",
+    "name": "Stiff Leg Deadlift",
+    "muscleGroups": ["hamstrings", "glutes"],
+    "equipment": "barbell",
+    "instructions": "1. Keep legs nearly straight\n2. Hinge at hips to lower bar\n3. Feel stretch in hamstrings\n4. Return to standing"
+  },
+  {
+    "id": "trap-bar-deadlift",
+    "name": "Trap Bar Deadlift",
+    "muscleGroups": ["back", "quads", "glutes"],
+    "equipment": "trapBar",
+    "instructions": "1. Stand inside trap bar\n2. Grip handles at sides\n3. Drive through heels to stand\n4. Lower with control"
+  },
+  {
+    "id": "overhead-press",
+    "name": "Overhead Press",
+    "muscleGroups": ["shoulders", "triceps"],
+    "equipment": "barbell",
+    "instructions": "1. Start with bar at shoulder height\n2. Grip slightly wider than shoulders\n3. Press bar overhead until arms lock out\n4. Lower bar back to shoulders"
+  },
+  {
+    "id": "push-press",
+    "name": "Push Press",
+    "muscleGroups": ["shoulders", "triceps"],
+    "equipment": "barbell",
+    "instructions": "1. Start with bar at shoulders\n2. Dip slightly at knees\n3. Explosively drive bar overhead\n4. Lock out at top"
+  },
+  {
+    "id": "dumbbell-shoulder-press",
+    "name": "Dumbbell Shoulder Press",
+    "muscleGroups": ["shoulders", "triceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Sit or stand with dumbbells at shoulders\n2. Press dumbbells overhead\n3. Lower with control"
+  },
+  {
+    "id": "arnold-press",
+    "name": "Arnold Press",
+    "muscleGroups": ["shoulders"],
+    "equipment": "dumbbell",
+    "instructions": "1. Start with dumbbells at chest, palms facing you\n2. Rotate and press overhead\n3. Reverse motion to lower"
+  },
+  {
+    "id": "barbell-row",
+    "name": "Barbell Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "barbell",
+    "instructions": "1. Hinge at hips with slight knee bend\n2. Grip bar wider than shoulder width\n3. Pull bar to lower chest\n4. Lower with control"
+  },
+  {
+    "id": "pendlay-row",
+    "name": "Pendlay Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "barbell",
+    "instructions": "1. Start with bar on floor\n2. Keep back parallel to ground\n3. Explosively row to chest\n4. Return bar to floor each rep"
+  },
+  {
+    "id": "dumbbell-row",
+    "name": "Dumbbell Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Place one hand and knee on bench\n2. Hold dumbbell in free hand\n3. Pull dumbbell to hip\n4. Lower with control"
+  },
+  {
+    "id": "chest-supported-row",
+    "name": "Chest Supported Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Lie face down on incline bench\n2. Let arms hang with dumbbells\n3. Row dumbbells to sides\n4. Lower with control"
+  },
+  {
+    "id": "t-bar-row",
+    "name": "T-Bar Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "machine",
+    "instructions": "1. Straddle T-bar with feet\n2. Grip handle with both hands\n3. Row bar to chest\n4. Lower with control"
+  },
+  {
+    "id": "cable-row",
+    "name": "Seated Cable Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "cable",
+    "instructions": "1. Sit at cable row station\n2. Keep chest up and back flat\n3. Pull handle to abdomen\n4. Squeeze shoulder blades"
+  },
+  {
+    "id": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "muscleGroups": ["lats", "biceps"],
+    "equipment": "cable",
+    "instructions": "1. Sit with thighs under pad\n2. Grip bar wider than shoulder width\n3. Pull bar to upper chest\n4. Squeeze shoulder blades together\n5. Return with control"
+  },
+  {
+    "id": "close-grip-lat-pulldown",
+    "name": "Close Grip Lat Pulldown",
+    "muscleGroups": ["lats", "biceps"],
+    "equipment": "cable",
+    "instructions": "1. Use V-bar or close grip attachment\n2. Pull to upper chest\n3. Squeeze lats at bottom\n4. Return with control"
+  },
+  {
+    "id": "straight-arm-pulldown",
+    "name": "Straight Arm Pulldown",
+    "muscleGroups": ["lats"],
+    "equipment": "cable",
+    "instructions": "1. Stand facing cable machine\n2. Keep arms straight\n3. Pull bar down to thighs\n4. Return with control"
+  },
+  {
+    "id": "pull-up",
+    "name": "Pull-up",
+    "muscleGroups": ["lats", "biceps", "back"],
+    "equipment": "pullupBar",
+    "instructions": "1. Hang from bar with overhand grip\n2. Pull body up until chin over bar\n3. Lower with control"
+  },
+  {
+    "id": "chin-up",
+    "name": "Chin-up",
+    "muscleGroups": ["biceps", "lats"],
+    "equipment": "pullupBar",
+    "instructions": "1. Hang from bar with underhand grip\n2. Pull up until chin over bar\n3. Lower with control"
+  },
+  {
+    "id": "neutral-grip-pull-up",
+    "name": "Neutral Grip Pull-up",
+    "muscleGroups": ["lats", "biceps"],
+    "equipment": "pullupBar",
+    "instructions": "1. Use parallel grip handles\n2. Pull up until chin over handles\n3. Lower with control"
+  },
+  {
+    "id": "bicep-curl",
+    "name": "Bicep Curl",
+    "muscleGroups": ["biceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Stand with dumbbells at sides\n2. Curl weights toward shoulders\n3. Keep elbows stationary\n4. Lower with control"
+  },
+  {
+    "id": "barbell-curl",
+    "name": "Barbell Curl",
+    "muscleGroups": ["biceps"],
+    "equipment": "barbell",
+    "instructions": "1. Stand with bar at thighs\n2. Curl bar toward shoulders\n3. Keep elbows at sides\n4. Lower with control"
+  },
+  {
+    "id": "hammer-curl",
+    "name": "Hammer Curl",
+    "muscleGroups": ["biceps", "forearms"],
+    "equipment": "dumbbell",
+    "instructions": "1. Hold dumbbells with neutral grip\n2. Curl weights toward shoulders\n3. Keep palms facing each other\n4. Lower with control"
+  },
+  {
+    "id": "preacher-curl",
+    "name": "Preacher Curl",
+    "muscleGroups": ["biceps"],
+    "equipment": "ezBar",
+    "instructions": "1. Rest upper arms on preacher pad\n2. Curl bar toward shoulders\n3. Lower with control\n4. Keep upper arms stationary"
+  },
+  {
+    "id": "incline-curl",
+    "name": "Incline Dumbbell Curl",
+    "muscleGroups": ["biceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Sit on incline bench\n2. Let arms hang straight\n3. Curl dumbbells up\n4. Lower with full stretch"
+  },
+  {
+    "id": "concentration-curl",
+    "name": "Concentration Curl",
+    "muscleGroups": ["biceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Sit with elbow on inner thigh\n2. Curl dumbbell toward shoulder\n3. Squeeze at top\n4. Lower with control"
+  },
+  {
+    "id": "cable-curl",
+    "name": "Cable Curl",
+    "muscleGroups": ["biceps"],
+    "equipment": "cable",
+    "instructions": "1. Stand facing low cable\n2. Curl bar toward shoulders\n3. Keep elbows at sides\n4. Lower with control"
+  },
+  {
+    "id": "tricep-pushdown",
+    "name": "Tricep Pushdown",
+    "muscleGroups": ["triceps"],
+    "equipment": "cable",
+    "instructions": "1. Attach rope or bar to high cable\n2. Keep elbows at sides\n3. Push down until arms straight\n4. Return with control"
+  },
+  {
+    "id": "tricep-rope-pushdown",
+    "name": "Tricep Rope Pushdown",
+    "muscleGroups": ["triceps"],
+    "equipment": "cable",
+    "instructions": "1. Attach rope to high cable\n2. Push down and spread rope at bottom\n3. Squeeze triceps\n4. Return with control"
+  },
+  {
+    "id": "skull-crusher",
+    "name": "Skull Crusher",
+    "muscleGroups": ["triceps"],
+    "equipment": "ezBar",
+    "instructions": "1. Lie on bench holding bar\n2. Lower bar toward forehead\n3. Keep upper arms vertical\n4. Extend to straighten arms"
+  },
+  {
+    "id": "overhead-tricep-extension",
+    "name": "Overhead Tricep Extension",
+    "muscleGroups": ["triceps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Hold dumbbell overhead with both hands\n2. Lower behind head by bending elbows\n3. Extend to straighten arms"
+  },
+  {
+    "id": "tricep-dip",
+    "name": "Tricep Dip",
+    "muscleGroups": ["triceps"],
+    "equipment": "dipStation",
+    "instructions": "1. Support body on parallel bars\n2. Keep torso upright\n3. Lower by bending elbows\n4. Press back up"
+  },
+  {
+    "id": "bench-dip",
+    "name": "Bench Dip",
+    "muscleGroups": ["triceps"],
+    "equipment": "bodyweight",
+    "instructions": "1. Place hands on bench behind you\n2. Extend legs in front\n3. Lower body by bending elbows\n4. Press back up"
+  },
+  {
+    "id": "lateral-raise",
+    "name": "Lateral Raise",
+    "muscleGroups": ["shoulders"],
+    "equipment": "dumbbell",
+    "instructions": "1. Stand with dumbbells at sides\n2. Raise arms out to sides\n3. Lift to shoulder height\n4. Lower with control"
+  },
+  {
+    "id": "cable-lateral-raise",
+    "name": "Cable Lateral Raise",
+    "muscleGroups": ["shoulders"],
+    "equipment": "cable",
+    "instructions": "1. Stand sideways to low cable\n2. Raise arm out to side\n3. Lift to shoulder height\n4. Lower with control"
+  },
+  {
+    "id": "front-raise",
+    "name": "Front Raise",
+    "muscleGroups": ["shoulders"],
+    "equipment": "dumbbell",
+    "instructions": "1. Hold dumbbells in front of thighs\n2. Raise arms to front\n3. Lift to shoulder height\n4. Lower with control"
+  },
+  {
+    "id": "rear-delt-fly",
+    "name": "Rear Delt Fly",
+    "muscleGroups": ["shoulders"],
+    "equipment": "dumbbell",
+    "instructions": "1. Bend over at hips\n2. Hold dumbbells hanging down\n3. Raise arms out to sides\n4. Squeeze shoulder blades"
+  },
+  {
+    "id": "face-pull",
+    "name": "Face Pull",
+    "muscleGroups": ["shoulders", "back"],
+    "equipment": "cable",
+    "instructions": "1. Set cable at face height\n2. Use rope attachment\n3. Pull toward face, elbows high\n4. Squeeze shoulder blades"
+  },
+  {
+    "id": "upright-row",
+    "name": "Upright Row",
+    "muscleGroups": ["shoulders", "traps"],
+    "equipment": "barbell",
+    "instructions": "1. Hold bar at thighs\n2. Pull bar up toward chin\n3. Lead with elbows\n4. Lower with control"
+  },
+  {
+    "id": "shrug",
+    "name": "Barbell Shrug",
+    "muscleGroups": ["traps"],
+    "equipment": "barbell",
+    "instructions": "1. Hold bar at thighs\n2. Shrug shoulders toward ears\n3. Hold at top briefly\n4. Lower with control"
+  },
+  {
+    "id": "dumbbell-shrug",
+    "name": "Dumbbell Shrug",
+    "muscleGroups": ["traps"],
+    "equipment": "dumbbell",
+    "instructions": "1. Hold dumbbells at sides\n2. Shrug shoulders up\n3. Squeeze at top\n4. Lower with control"
+  },
+  {
+    "id": "cable-fly",
+    "name": "Cable Fly",
+    "muscleGroups": ["chest"],
+    "equipment": "cable",
+    "instructions": "1. Set cables at chest height\n2. Stand in split stance\n3. Bring handles together in front\n4. Return with control"
+  },
+  {
+    "id": "low-cable-fly",
+    "name": "Low to High Cable Fly",
+    "muscleGroups": ["chest"],
+    "equipment": "cable",
+    "instructions": "1. Set cables at low position\n2. Bring handles up and together\n3. Focus on upper chest\n4. Return with control"
+  },
+  {
+    "id": "high-cable-fly",
+    "name": "High to Low Cable Fly",
+    "muscleGroups": ["chest"],
+    "equipment": "cable",
+    "instructions": "1. Set cables at high position\n2. Bring handles down and together\n3. Focus on lower chest\n4. Return with control"
+  },
+  {
+    "id": "dumbbell-fly",
+    "name": "Dumbbell Fly",
+    "muscleGroups": ["chest"],
+    "equipment": "dumbbell",
+    "instructions": "1. Lie on bench with dumbbells above\n2. Lower arms out to sides\n3. Keep slight bend in elbows\n4. Bring weights back together"
+  },
+  {
+    "id": "pec-deck",
+    "name": "Pec Deck",
+    "muscleGroups": ["chest"],
+    "equipment": "machine",
+    "instructions": "1. Sit with back against pad\n2. Place forearms on pads\n3. Bring pads together in front\n4. Return with control"
+  },
+  {
+    "id": "machine-chest-press",
+    "name": "Machine Chest Press",
+    "muscleGroups": ["chest", "triceps"],
+    "equipment": "machine",
+    "instructions": "1. Sit with back against pad\n2. Grip handles at chest level\n3. Press forward until arms extend\n4. Return with control"
+  },
+  {
+    "id": "leg-press",
+    "name": "Leg Press",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "machine",
+    "instructions": "1. Sit in leg press machine\n2. Place feet shoulder-width on platform\n3. Lower weight by bending knees\n4. Press back to start"
+  },
+  {
+    "id": "hack-squat",
+    "name": "Hack Squat",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "machine",
+    "instructions": "1. Position shoulders under pads\n2. Place feet on platform\n3. Lower by bending knees\n4. Press back to start"
+  },
+  {
+    "id": "leg-extension",
+    "name": "Leg Extension",
+    "muscleGroups": ["quads"],
+    "equipment": "machine",
+    "instructions": "1. Sit in machine with back against pad\n2. Position pad above ankles\n3. Extend legs fully\n4. Lower with control"
+  },
+  {
+    "id": "leg-curl",
+    "name": "Lying Leg Curl",
+    "muscleGroups": ["hamstrings"],
+    "equipment": "machine",
+    "instructions": "1. Lie face down on machine\n2. Position pad above heels\n3. Curl weight toward glutes\n4. Lower with control"
+  },
+  {
+    "id": "seated-leg-curl",
+    "name": "Seated Leg Curl",
+    "muscleGroups": ["hamstrings"],
+    "equipment": "machine",
+    "instructions": "1. Sit with back against pad\n2. Position pad above ankles\n3. Curl weight by bending knees\n4. Return with control"
+  },
+  {
+    "id": "hip-thrust",
+    "name": "Hip Thrust",
+    "muscleGroups": ["glutes", "hamstrings"],
+    "equipment": "barbell",
+    "instructions": "1. Sit with upper back against bench\n2. Roll barbell over hips\n3. Drive through heels to lift hips\n4. Squeeze glutes at top"
+  },
+  {
+    "id": "glute-bridge",
+    "name": "Glute Bridge",
+    "muscleGroups": ["glutes"],
+    "equipment": "bodyweight",
+    "instructions": "1. Lie on back with knees bent\n2. Drive through heels to lift hips\n3. Squeeze glutes at top\n4. Lower with control"
+  },
+  {
+    "id": "cable-pull-through",
+    "name": "Cable Pull Through",
+    "muscleGroups": ["glutes", "hamstrings"],
+    "equipment": "cable",
+    "instructions": "1. Face away from low cable\n2. Hinge at hips, reach back for rope\n3. Stand by extending hips\n4. Squeeze glutes at top"
+  },
+  {
+    "id": "good-morning",
+    "name": "Good Morning",
+    "muscleGroups": ["hamstrings", "lowerBack"],
+    "equipment": "barbell",
+    "instructions": "1. Position bar on upper back\n2. Hinge at hips with slight knee bend\n3. Lower torso toward parallel\n4. Return to standing"
+  },
+  {
+    "id": "hip-adductor",
+    "name": "Hip Adductor Machine",
+    "muscleGroups": ["adductors"],
+    "equipment": "machine",
+    "instructions": "1. Sit with legs spread on pads\n2. Squeeze legs together\n3. Hold briefly at center\n4. Return with control"
+  },
+  {
+    "id": "hip-abductor",
+    "name": "Hip Abductor Machine",
+    "muscleGroups": ["abductors"],
+    "equipment": "machine",
+    "instructions": "1. Sit with legs on pads\n2. Push legs apart\n3. Hold briefly at end\n4. Return with control"
+  },
+  {
+    "id": "calf-raise",
+    "name": "Standing Calf Raise",
+    "muscleGroups": ["calves"],
+    "equipment": "machine",
+    "instructions": "1. Stand on edge of platform\n2. Rise up on balls of feet\n3. Squeeze calves at top\n4. Lower heels below platform"
+  },
+  {
+    "id": "seated-calf-raise",
+    "name": "Seated Calf Raise",
+    "muscleGroups": ["calves"],
+    "equipment": "machine",
+    "instructions": "1. Sit with knees under pad\n2. Rise up on balls of feet\n3. Squeeze calves at top\n4. Lower with control"
+  },
+  {
+    "id": "donkey-calf-raise",
+    "name": "Donkey Calf Raise",
+    "muscleGroups": ["calves"],
+    "equipment": "machine",
+    "instructions": "1. Bend at hips, back flat\n2. Position pad on lower back\n3. Rise up on balls of feet\n4. Lower with control"
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "muscleGroups": ["abdominals", "fullBody"],
+    "equipment": "bodyweight",
+    "instructions": "1. Support body on forearms and toes\n2. Keep body in straight line\n3. Engage core throughout\n4. Hold for prescribed time"
+  },
+  {
+    "id": "side-plank",
+    "name": "Side Plank",
+    "muscleGroups": ["obliques", "abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "1. Support body on one forearm and feet\n2. Stack feet or stagger them\n3. Keep hips elevated\n4. Hold for prescribed time"
+  },
+  {
+    "id": "dead-bug",
+    "name": "Dead Bug",
+    "muscleGroups": ["abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "1. Lie on back with arms up\n2. Lift legs with knees bent 90°\n3. Lower opposite arm and leg\n4. Return and alternate"
+  },
+  {
+    "id": "crunch",
+    "name": "Crunch",
+    "muscleGroups": ["abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "1. Lie on back with knees bent\n2. Place hands behind head\n3. Curl shoulders off floor\n4. Lower with control"
+  },
+  {
+    "id": "cable-crunch",
+    "name": "Cable Crunch",
+    "muscleGroups": ["abdominals"],
+    "equipment": "cable",
+    "instructions": "1. Kneel facing cable with rope\n2. Hold rope behind head\n3. Crunch down toward floor\n4. Return with control"
+  },
+  {
+    "id": "hanging-leg-raise",
+    "name": "Hanging Leg Raise",
+    "muscleGroups": ["abdominals"],
+    "equipment": "pullupBar",
+    "instructions": "1. Hang from bar\n2. Raise legs to parallel\n3. Keep legs straight\n4. Lower with control"
+  },
+  {
+    "id": "hanging-knee-raise",
+    "name": "Hanging Knee Raise",
+    "muscleGroups": ["abdominals"],
+    "equipment": "pullupBar",
+    "instructions": "1. Hang from bar\n2. Raise knees toward chest\n3. Curl pelvis up\n4. Lower with control"
+  },
+  {
+    "id": "russian-twist",
+    "name": "Russian Twist",
+    "muscleGroups": ["obliques", "abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "1. Sit with knees bent, lean back slightly\n2. Hold weight at chest\n3. Rotate torso side to side\n4. Keep core engaged"
+  },
+  {
+    "id": "ab-wheel-rollout",
+    "name": "Ab Wheel Rollout",
+    "muscleGroups": ["abdominals"],
+    "equipment": "abWheel",
+    "instructions": "1. Kneel with hands on wheel\n2. Roll out extending body\n3. Go as far as can control\n4. Roll back to start"
+  },
+  {
+    "id": "pallof-press",
+    "name": "Pallof Press",
+    "muscleGroups": ["abdominals", "obliques"],
+    "equipment": "cable",
+    "instructions": "1. Stand sideways to cable\n2. Hold handle at chest\n3. Press handle straight out\n4. Resist rotation"
+  },
+  {
+    "id": "push-up",
+    "name": "Push-up",
+    "muscleGroups": ["chest", "shoulders", "triceps"],
+    "equipment": "bodyweight",
+    "instructions": "1. Start in plank position\n2. Lower chest to floor\n3. Push back up to start\n4. Keep body in straight line"
+  },
+  {
+    "id": "diamond-push-up",
+    "name": "Diamond Push-up",
+    "muscleGroups": ["triceps", "chest"],
+    "equipment": "bodyweight",
+    "instructions": "1. Place hands together under chest\n2. Form diamond shape with fingers\n3. Lower chest to hands\n4. Push back up"
+  },
+  {
+    "id": "pike-push-up",
+    "name": "Pike Push-up",
+    "muscleGroups": ["shoulders", "triceps"],
+    "equipment": "bodyweight",
+    "instructions": "1. Start in pike position, hips high\n2. Lower head toward floor\n3. Push back up\n4. Keep legs straight"
+  },
+  {
+    "id": "dip",
+    "name": "Chest Dip",
+    "muscleGroups": ["chest", "triceps", "shoulders"],
+    "equipment": "dipStation",
+    "instructions": "1. Support body on parallel bars\n2. Lower by bending elbows\n3. Lean forward slightly for chest\n4. Push back up to start"
+  },
+  {
+    "id": "inverted-row",
+    "name": "Inverted Row",
+    "muscleGroups": ["back", "biceps"],
+    "equipment": "bodyweight",
+    "instructions": "1. Lie under bar at waist height\n2. Grip bar with overhand grip\n3. Pull chest to bar\n4. Lower with control"
+  },
+  {
+    "id": "nordic-curl",
+    "name": "Nordic Hamstring Curl",
+    "muscleGroups": ["hamstrings"],
+    "equipment": "bodyweight",
+    "instructions": "1. Kneel with ankles secured\n2. Lower body forward slowly\n3. Control descent with hamstrings\n4. Push back up or use hands"
+  },
+  {
+    "id": "sissy-squat",
+    "name": "Sissy Squat",
+    "muscleGroups": ["quads"],
+    "equipment": "bodyweight",
+    "instructions": "1. Stand on balls of feet\n2. Lean back while bending knees\n3. Lower hips toward heels\n4. Return to standing"
+  },
+  {
+    "id": "muscle-up",
+    "name": "Muscle Up",
+    "muscleGroups": ["lats", "chest", "triceps"],
+    "equipment": "pullupBar",
+    "instructions": "1. Hang from bar\n2. Pull explosively\n3. Transition over bar\n4. Push to lockout"
+  },
+  {
+    "id": "barbell-hip-thrust",
+    "name": "Barbell Hip Thrust",
+    "muscleGroups": ["glutes"],
+    "equipment": "barbell",
+    "instructions": "1. Upper back on bench\n2. Bar over hips\n3. Drive hips up\n4. Squeeze glutes at top"
+  },
+  {
+    "id": "farmer-carry",
+    "name": "Farmer's Carry",
+    "muscleGroups": ["forearms", "traps", "fullBody"],
+    "equipment": "dumbbell",
+    "instructions": "1. Hold heavy weights at sides\n2. Walk with tall posture\n3. Keep core braced\n4. Walk for distance or time"
+  },
+  {
+    "id": "wrist-curl",
+    "name": "Wrist Curl",
+    "muscleGroups": ["forearms"],
+    "equipment": "barbell",
+    "instructions": "1. Sit with forearms on thighs\n2. Let wrists hang over knees\n3. Curl bar up with wrists\n4. Lower with control"
+  },
+  {
+    "id": "reverse-wrist-curl",
+    "name": "Reverse Wrist Curl",
+    "muscleGroups": ["forearms"],
+    "equipment": "barbell",
+    "instructions": "1. Sit with forearms on thighs, palms down\n2. Let wrists hang over knees\n3. Raise bar with wrist extension\n4. Lower with control"
+  },
+  {
+    "id": "rowing-machine",
+    "name": "Rowing Machine",
+    "muscleGroups": ["cardio", "fullBody"],
+    "equipment": "rower",
+    "instructions": "1. Sit on rower with feet strapped in\n2. Push with legs first\n3. Pull handle to chest\n4. Return in reverse order"
+  },
+  {
+    "id": "treadmill-run",
+    "name": "Treadmill Run",
+    "muscleGroups": ["cardio"],
+    "equipment": "treadmill",
+    "instructions": "1. Set desired speed and incline\n2. Maintain steady pace\n3. Pump arms naturally\n4. Land midfoot"
+  },
+  {
+    "id": "stationary-bike",
+    "name": "Stationary Bike",
+    "muscleGroups": ["cardio", "quads"],
+    "equipment": "bike",
+    "instructions": "1. Adjust seat height\n2. Maintain steady cadence\n3. Keep core engaged\n4. Vary resistance as needed"
+  },
+  {
+    "id": "elliptical",
+    "name": "Elliptical",
+    "muscleGroups": ["cardio", "fullBody"],
+    "equipment": "elliptical",
+    "instructions": "1. Step onto pedals\n2. Hold handles or let arms move\n3. Push and pull with legs\n4. Maintain steady rhythm"
+  },
+  {
+    "id": "stair-climber",
+    "name": "Stair Climber",
+    "muscleGroups": ["cardio", "glutes", "quads"],
+    "equipment": "stairClimber",
+    "instructions": "1. Step onto stairs\n2. Hold handrails lightly\n3. Step in steady rhythm\n4. Keep upright posture"
+  },
+  {
+    "id": "battle-ropes",
+    "name": "Battle Ropes",
+    "muscleGroups": ["cardio", "shoulders", "fullBody"],
+    "equipment": "battleRopes",
+    "instructions": "1. Hold rope ends at waist\n2. Alternate arm waves\n3. Keep core engaged\n4. Continue for duration"
+  },
+  {
+    "id": "box-jump",
+    "name": "Box Jump",
+    "muscleGroups": ["quads", "glutes", "calves"],
+    "equipment": "box",
+    "instructions": "1. Stand facing box\n2. Swing arms and jump\n3. Land softly on box\n4. Step down carefully"
+  },
+  {
+    "id": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "muscleGroups": ["glutes", "hamstrings", "back"],
+    "equipment": "kettlebell",
+    "instructions": "1. Hinge at hips, grip kettlebell\n2. Swing between legs\n3. Drive hips forward explosively\n4. Swing to chest height"
+  },
+  {
+    "id": "kettlebell-goblet-squat",
+    "name": "Kettlebell Goblet Squat",
+    "muscleGroups": ["quads", "glutes"],
+    "equipment": "kettlebell",
+    "instructions": "1. Hold kettlebell at chest\n2. Squat between legs\n3. Keep chest tall\n4. Drive up to standing"
+  },
+  {
+    "id": "turkish-get-up",
+    "name": "Turkish Get Up",
+    "muscleGroups": ["fullBody", "shoulders"],
+    "equipment": "kettlebell",
+    "instructions": "1. Lie down holding kettlebell up\n2. Roll to elbow, then hand\n3. Sweep leg through to kneeling\n4. Stand up, reverse to return"
+  },
+  {
+    "id": "snatch",
+    "name": "Barbell Snatch",
+    "muscleGroups": ["fullBody", "shoulders"],
+    "equipment": "barbell",
+    "instructions": "1. Wide grip on bar at floor\n2. Pull explosively from floor\n3. Catch bar overhead in squat\n4. Stand to complete lift"
+  },
+  {
+    "id": "clean-and-jerk",
+    "name": "Clean and Jerk",
+    "muscleGroups": ["fullBody", "shoulders"],
+    "equipment": "barbell",
+    "instructions": "1. Pull bar from floor to shoulders\n2. Catch in front squat\n3. Dip and drive bar overhead\n4. Catch in split stance"
+  },
+  {
+    "id": "power-clean",
+    "name": "Power Clean",
+    "muscleGroups": ["fullBody", "shoulders"],
+    "equipment": "barbell",
+    "instructions": "1. Start with bar at floor\n2. Pull explosively\n3. Catch at shoulders without squatting\n4. Return bar to floor"
+  },
+  {
+    "id": "thruster",
+    "name": "Thruster",
+    "muscleGroups": ["quads", "shoulders", "fullBody"],
+    "equipment": "barbell",
+    "instructions": "1. Hold bar at shoulders\n2. Squat down\n3. Stand and press overhead\n4. Lower and repeat"
+  },
+  {
+    "id": "burpee",
+    "name": "Burpee",
+    "muscleGroups": ["fullBody", "cardio"],
+    "equipment": "bodyweight",
+    "instructions": "1. Stand, then squat down\n2. Jump feet back to plank\n3. Optional push-up\n4. Jump feet forward and jump up"
+  },
+  {
+    "id": "mountain-climber",
+    "name": "Mountain Climber",
+    "muscleGroups": ["abdominals", "cardio"],
+    "equipment": "bodyweight",
+    "instructions": "1. Start in plank position\n2. Drive one knee toward chest\n3. Alternate legs quickly\n4. Keep core tight"
+  },
+  {
+    "id": "jumping-jack",
+    "name": "Jumping Jack",
+    "muscleGroups": ["cardio", "fullBody"],
+    "equipment": "bodyweight",
+    "instructions": "1. Stand with feet together\n2. Jump feet apart while raising arms\n3. Jump back to start\n4. Repeat in rhythm"
+  },
+  {
+    "id": "jump-rope",
+    "name": "Jump Rope",
+    "muscleGroups": ["cardio", "calves"],
+    "equipment": "jumpRope",
+    "instructions": "1. Hold rope handles at sides\n2. Swing rope overhead\n3. Jump as rope passes\n4. Land softly on balls of feet"
+  },
+  {
+    "id": "sled-push",
+    "name": "Sled Push",
+    "muscleGroups": ["quads", "glutes", "fullBody"],
+    "equipment": "sled",
+    "instructions": "1. Load sled with weight\n2. Push from high or low handles\n3. Drive through legs\n4. Push for distance or time"
+  },
+  {
+    "id": "sled-pull",
+    "name": "Sled Pull",
+    "muscleGroups": ["back", "glutes", "fullBody"],
+    "equipment": "sled",
+    "instructions": "1. Attach rope to sled\n2. Pull hand over hand\n3. Keep back engaged\n4. Pull for distance or time"
+  }
+]
