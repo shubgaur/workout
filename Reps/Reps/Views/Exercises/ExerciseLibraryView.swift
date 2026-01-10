@@ -41,20 +41,26 @@ struct ExerciseLibraryView: View {
                     exerciseList
                 }
             }
-            .background(RepsTheme.Colors.background)
-            .navigationTitle("Exercises")
-            .navigationBarTitleDisplayMode(.large)
+            .transparentNavigation()
+            .navigationBarHidden(true)
             .searchable(text: $searchText, prompt: "Search exercises")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    GradientTitle(text: "Exercises")
+                    Spacer()
                     Button {
                         showingFilters.toggle()
                     } label: {
                         Image(systemName: showingFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                            .font(.system(size: 24))
                             .foregroundStyle(hasActiveFilters ? RepsTheme.Colors.accent : RepsTheme.Colors.textSecondary)
                     }
                 }
+                .padding(.horizontal, RepsTheme.Spacing.md)
+                .padding(.top, RepsTheme.Spacing.xl)
+                .padding(.bottom, RepsTheme.Spacing.sm)
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
     }
 
@@ -87,6 +93,11 @@ struct ExerciseLibraryView: View {
                     }
                     .padding(.horizontal, RepsTheme.Spacing.md)
                 }
+                // Capture horizontal drags to prevent tab swipe interference
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 5)
+                        .onChanged { _ in }
+                )
 
                 // Equipment filters
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -109,46 +120,56 @@ struct ExerciseLibraryView: View {
                     }
                     .padding(.horizontal, RepsTheme.Spacing.md)
                 }
+                // Capture horizontal drags to prevent tab swipe interference
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 5)
+                        .onChanged { _ in }
+                )
             }
             .padding(.vertical, RepsTheme.Spacing.sm)
-            .background(RepsTheme.Colors.surfaceElevated)
+            .background(Color.clear)
         }
     }
 
     private var exerciseList: some View {
-        List {
-            ForEach(filteredExercises) { exercise in
-                NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                    ExerciseCell(exercise: exercise)
-                }
-                .listRowBackground(RepsTheme.Colors.surface)
-                .listRowSeparatorTint(RepsTheme.Colors.border)
-                .contextMenu {
-                    Button {
-                        exerciseToEdit = exercise
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
+        ScrollView {
+            LazyVStack(spacing: RepsTheme.Spacing.sm) {
+                ForEach(filteredExercises) { exercise in
+                    NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                        ExerciseCell(exercise: exercise)
+                            .padding(RepsTheme.Spacing.md)
+                            .repsCard()
                     }
-
-                    Button {
-                        duplicateExercise(exercise)
-                    } label: {
-                        Label("Duplicate", systemImage: "doc.on.doc")
-                    }
-
-                    if exercise.isCustom {
-                        Button(role: .destructive) {
-                            exerciseToDelete = exercise
-                            showingDeleteConfirmation = true
+                    .buttonStyle(ScalingPressButtonStyle())
+                    .contextMenu {
+                        Button {
+                            exerciseToEdit = exercise
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("Edit", systemImage: "pencil")
+                        }
+
+                        Button {
+                            duplicateExercise(exercise)
+                        } label: {
+                            Label("Duplicate", systemImage: "doc.on.doc")
+                        }
+
+                        if exercise.isCustom {
+                            Button(role: .destructive) {
+                                exerciseToDelete = exercise
+                                showingDeleteConfirmation = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
                 }
             }
+            .padding(.horizontal, RepsTheme.Spacing.md)
+            .padding(.bottom, 70)
         }
-        .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .background(Color.clear)
         .sheet(item: $exerciseToEdit) { exercise in
             ExerciseDetailView(exercise: exercise)
         }
@@ -206,7 +227,7 @@ struct ExerciseLibraryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RepsTheme.Colors.background)
+        .background(Color.clear)
     }
 }
 
@@ -218,23 +239,23 @@ struct FilterChip: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            HapticManager.filterSelected()
+            withAnimation(RepsTheme.Animations.segment) {
+                action()
+            }
+        }) {
             Text(title)
-                .font(RepsTheme.Typography.caption)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .foregroundStyle(isSelected ? RepsTheme.Colors.background : RepsTheme.Colors.text)
-                .padding(.horizontal, RepsTheme.Spacing.sm)
-                .padding(.vertical, RepsTheme.Spacing.xs)
+                .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                .foregroundStyle(isSelected ? .black : RepsTheme.Colors.text)
+                .padding(.horizontal, RepsTheme.Spacing.md)
+                .padding(.vertical, RepsTheme.Spacing.sm)
                 .background(
                     Capsule()
-                        .fill(isSelected ? RepsTheme.Colors.accent : RepsTheme.Colors.surface)
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(isSelected ? Color.clear : RepsTheme.Colors.border, lineWidth: 1)
+                        .fill(isSelected ? Color.white : RepsTheme.Colors.surface)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScalingPressButtonStyle())
     }
 }
 

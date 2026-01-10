@@ -27,9 +27,9 @@ struct DayDetailView: View {
             }
             .padding(RepsTheme.Spacing.md)
         }
-        .background(RepsTheme.Colors.background)
         .navigationTitle(day.name.isEmpty ? "Day \(day.dayNumber)" : day.name)
         .navigationBarTitleDisplayMode(.large)
+        .transparentNavigation()
         .sheet(isPresented: $showingAddExercise) {
             ExercisePickerView(exercises: exercises) { selectedExercise in
                 addExercise(selectedExercise)
@@ -318,7 +318,7 @@ struct ExercisePickerView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(RepsTheme.Colors.background)
+            .background(Color.clear)
             .navigationTitle("Add Exercise")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search exercises")

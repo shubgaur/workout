@@ -25,6 +25,7 @@ struct SettingsView: View {
                     Text("kg").tag(WeightUnit.kg)
                     Text("lbs").tag(WeightUnit.lbs)
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 Picker("Distance", selection: Binding(
                     get: { settings.distanceUnit },
@@ -34,8 +35,10 @@ struct SettingsView: View {
                     Text("Kilometers").tag(DistanceUnit.kilometers)
                     Text("Miles").tag(DistanceUnit.miles)
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Units")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
             // Workout Defaults Section
@@ -48,6 +51,7 @@ struct SettingsView: View {
                         Text("\(num)").tag(num)
                     }
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 Picker("Default Reps", selection: Binding(
                     get: { settings.defaultReps },
@@ -57,6 +61,7 @@ struct SettingsView: View {
                         Text("\(num)").tag(num)
                     }
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 Picker("Default Rest", selection: Binding(
                     get: { settings.defaultRestSeconds },
@@ -69,13 +74,17 @@ struct SettingsView: View {
                     Text("3min").tag(180)
                     Text("5min").tag(300)
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 Toggle("Auto-start Rest Timer", isOn: Binding(
                     get: { settings.autoStartRest },
                     set: { settings.autoStartRest = $0 }
                 ))
+                .tint(RepsTheme.Colors.accent)
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Workout")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
             // Feedback Section
@@ -84,13 +93,36 @@ struct SettingsView: View {
                     get: { settings.soundEnabled },
                     set: { settings.soundEnabled = $0 }
                 ))
+                .tint(RepsTheme.Colors.accent)
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 Toggle("Haptic Feedback", isOn: Binding(
                     get: { settings.hapticEnabled },
                     set: { settings.hapticEnabled = $0 }
                 ))
+                .tint(RepsTheme.Colors.accent)
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Feedback")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+            }
+
+            // Appearance Section
+            Section {
+                NavigationLink {
+                    ThemeSettingsView()
+                } label: {
+                    HStack {
+                        Text("Theme")
+                        Spacer()
+                        Text(PaletteManager.shared.activePalette.name)
+                            .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    }
+                }
+                .listRowBackground(RepsTheme.Colors.surface)
+            } header: {
+                Text("Appearance")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
             // Sync Section
@@ -99,10 +131,14 @@ struct SettingsView: View {
                     get: { settings.iCloudSyncEnabled },
                     set: { settings.iCloudSyncEnabled = $0 }
                 ))
+                .tint(RepsTheme.Colors.accent)
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Sync")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             } footer: {
                 Text("Sync your workouts and programs across all your devices")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
             // About Section
@@ -113,14 +149,17 @@ struct SettingsView: View {
                     Text("1.0.0")
                         .foregroundStyle(RepsTheme.Colors.textSecondary)
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 NavigationLink {
                     AcknowledgementsView()
                 } label: {
                     Text("Acknowledgements")
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("About")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
             // Danger Zone
@@ -133,14 +172,18 @@ struct SettingsView: View {
                         Text("Reset All Data")
                     }
                 }
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Data")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             } footer: {
                 Text("This will permanently delete all your workouts, programs, and personal records")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .transparentNavigation()
     }
 }
 
@@ -155,8 +198,10 @@ struct AcknowledgementsView: View {
                     description: "Exercise database with animations",
                     url: "https://exercisedb.io"
                 )
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Data Sources")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
             Section {
@@ -165,24 +210,31 @@ struct AcknowledgementsView: View {
                     description: "Apple's declarative UI framework",
                     url: nil
                 )
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 AcknowledgementRow(
                     name: "Swift Charts",
                     description: "Data visualization framework",
                     url: nil
                 )
+                .listRowBackground(RepsTheme.Colors.surface)
 
                 AcknowledgementRow(
                     name: "SwiftData",
                     description: "Persistence framework",
                     url: nil
                 )
+                .listRowBackground(RepsTheme.Colors.surface)
             } header: {
                 Text("Frameworks")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
         .navigationTitle("Acknowledgements")
         .navigationBarTitleDisplayMode(.inline)
+        .preferredColorScheme(.dark)
     }
 }
 

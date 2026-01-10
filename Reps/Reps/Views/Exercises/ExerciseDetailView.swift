@@ -100,9 +100,9 @@ struct ExerciseDetailView: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: exercise.videoURL)
             }
         }
-        .background(RepsTheme.Colors.background)
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
+        .transparentNavigation()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Edit") {
@@ -434,7 +434,10 @@ struct VideoPlayerSheet: View {
             }
         }
         .onDisappear {
+            // Full AVPlayer cleanup to release resources
             player?.pause()
+            player?.replaceCurrentItem(with: nil)
+            player = nil
         }
     }
 
@@ -541,6 +544,10 @@ struct YouTubePlayerView: UIViewRepresentable {
 struct GIFPlayerView: UIViewRepresentable {
     let url: URL
 
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     func makeUIView(context: Context) -> UIView {
         let containerView = UIView()
         containerView.backgroundColor = UIColor(RepsTheme.Colors.background)
@@ -549,6 +556,7 @@ struct GIFPlayerView: UIViewRepresentable {
         imageView.contentMode = .scaleAspectFit
         imageView.backgroundColor = UIColor(RepsTheme.Colors.background)
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.tag = 100  // Tag for retrieval
 
         containerView.addSubview(imageView)
         NSLayoutConstraint.activate([
@@ -558,37 +566,47 @@ struct GIFPlayerView: UIViewRepresentable {
             imageView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
         ])
 
-        // Load animated GIF
-        if let data = try? Data(contentsOf: url),
-           let source = CGImageSourceCreateWithData(data as CFData, nil) {
+        // Load animated GIF asynchronously to avoid blocking main thread
+        let gifURL = url
+        Task.detached(priority: .userInitiated) {
+            guard let data = try? Data(contentsOf: gifURL),
+                  let source = CGImageSourceCreateWithData(data as CFData, nil) else { return }
+
             let frameCount = CGImageSourceGetCount(source)
-            var images: [UIImage] = []
-            var duration: Double = 0
+            var loadedImages: [UIImage] = []
+            var totalDuration: Double = 0
 
             for i in 0..<frameCount {
                 if let cgImage = CGImageSourceCreateImageAtIndex(source, i, nil) {
-                    images.append(UIImage(cgImage: cgImage))
+                    loadedImages.append(UIImage(cgImage: cgImage))
 
-                    // Get frame duration
                     if let properties = CGImageSourceCopyPropertiesAtIndex(source, i, nil) as? [String: Any],
                        let gifProperties = properties[kCGImagePropertyGIFDictionary as String] as? [String: Any],
                        let frameDuration = gifProperties[kCGImagePropertyGIFDelayTime as String] as? Double {
-                        duration += frameDuration
+                        totalDuration += frameDuration
                     } else {
-                        duration += 0.1 // Default frame duration
+                        totalDuration += 0.1
                     }
                 }
             }
 
-            imageView.animationImages = images
-            imageView.animationDuration = duration
-            imageView.startAnimating()
+            // Capture final values for sendability
+            let finalImages = loadedImages
+            let finalDuration = totalDuration
+
+            await MainActor.run {
+                imageView.animationImages = finalImages
+                imageView.animationDuration = finalDuration
+                imageView.startAnimating()
+            }
         }
 
         return containerView
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {}
+
+    class Coordinator {}
 }
 
 // MARK: - Remote GIF Player View
@@ -837,7 +855,8 @@ struct VideoURLInputSheet: View {
 
                 Spacer()
             }
-            .background(RepsTheme.Colors.background)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -949,6 +968,7 @@ struct ExerciseEditSheet: View {
     @State private var imageURL: String = ""
     @State private var localImageFilename: String?
     @State private var showingImagePicker = false
+    @State private var cachedLocalImage: UIImage?
 
     var body: some View {
         NavigationStack {
@@ -972,13 +992,18 @@ struct ExerciseEditSheet: View {
 
                 Section("Image") {
                     // Show current image preview
-                    if let filename = localImageFilename {
+                    if localImageFilename != nil {
                         HStack {
-                            Image(uiImage: loadLocalImage(filename: filename) ?? UIImage())
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 80, height: 80)
-                                .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+                            if let image = cachedLocalImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+                            } else {
+                                ProgressView()
+                                    .frame(width: 80, height: 80)
+                            }
 
                             Spacer()
 
@@ -988,10 +1013,14 @@ struct ExerciseEditSheet: View {
                                     VideoStorageService.deleteImage(filename: old)
                                 }
                                 localImageFilename = nil
+                                cachedLocalImage = nil
                             } label: {
                                 Image(systemName: "trash")
                                     .foregroundStyle(RepsTheme.Colors.error)
                             }
+                        }
+                        .task(id: localImageFilename) {
+                            await loadLocalImageAsync()
                         }
                     } else if !imageURL.isEmpty, let url = URL(string: imageURL) {
                         HStack {
@@ -1055,13 +1084,15 @@ struct ExerciseEditSheet: View {
                     .disabled(name.isEmpty)
                 }
             }
-            .onAppear {
+            .task {
                 name = exercise.name
                 selectedMuscles = Set(exercise.muscleGroups)
                 selectedEquipment = Set(exercise.equipment)
                 instructions = exercise.instructions ?? ""
                 imageURL = exercise.imageURL ?? ""
                 localImageFilename = exercise.localImageFilename
+                // Load cached image if local filename exists
+                await loadLocalImageAsync()
             }
             .fileImporter(
                 isPresented: $showingImagePicker,
@@ -1073,10 +1104,14 @@ struct ExerciseEditSheet: View {
         }
     }
 
-    private func loadLocalImage(filename: String) -> UIImage? {
+    private func loadLocalImageAsync() async {
+        guard let filename = localImageFilename else { return }
         let url = VideoStorageService.imageURL(for: filename)
-        guard let data = try? Data(contentsOf: url) else { return nil }
-        return UIImage(data: data)
+        let image = await Task.detached(priority: .userInitiated) {
+            guard let data = try? Data(contentsOf: url) else { return nil as UIImage? }
+            return UIImage(data: data)
+        }.value
+        cachedLocalImage = image
     }
 
     private func handleImageSelection(_ result: Result<[URL], Error>) {
@@ -1084,18 +1119,25 @@ struct ExerciseEditSheet: View {
         case .success(let urls):
             guard let sourceURL = urls.first else { return }
 
-            do {
-                // Delete old image if exists
-                if let old = localImageFilename {
-                    VideoStorageService.deleteImage(filename: old)
-                }
+            // Save image async to avoid blocking main thread
+            Task {
+                do {
+                    // Delete old image if exists
+                    if let old = localImageFilename {
+                        VideoStorageService.deleteImage(filename: old)
+                    }
 
-                // Save new image
-                let filename = try VideoStorageService.saveImage(from: sourceURL)
-                localImageFilename = filename
-                imageURL = "" // Clear URL when local image is selected
-            } catch {
-                print("Failed to save image: \(error)")
+                    // Save new image (file I/O moved off main thread)
+                    let filename = try await Task.detached(priority: .userInitiated) {
+                        try VideoStorageService.saveImage(from: sourceURL)
+                    }.value
+                    localImageFilename = filename
+                    imageURL = "" // Clear URL when local image is selected
+                    // Trigger image loading
+                    await loadLocalImageAsync()
+                } catch {
+                    print("Failed to save image: \(error)")
+                }
             }
         case .failure(let error):
             print("Image selection failed: \(error)")

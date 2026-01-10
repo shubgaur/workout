@@ -20,9 +20,9 @@ struct WorkoutDetailView: View {
             }
             .padding(RepsTheme.Spacing.md)
         }
-        .background(RepsTheme.Colors.background)
         .navigationTitle(workout.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .transparentNavigation()
     }
 
     // MARK: - Stats Header
@@ -118,16 +118,24 @@ struct WorkoutDetailView: View {
 
     // MARK: - Helpers
 
-    private func formatDate(_ date: Date) -> String {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d, yyyy"
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }()
+
+    private func formatDate(_ date: Date) -> String {
+        Self.dateFormatter.string(from: date)
     }
 
     private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        return formatter.string(from: date)
+        Self.timeFormatter.string(from: date)
     }
 }
 

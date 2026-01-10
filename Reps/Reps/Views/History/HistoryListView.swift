@@ -11,7 +11,16 @@ struct HistoryListView: View {
     @Query(sort: \WorkoutSession.startTime, order: .reverse) private var allWorkouts: [WorkoutSession]
     @State private var selectedFilter: HistoryFilter = .all
 
-    private var workouts: [WorkoutSession] {
+    // Cached computed values for performance
+    @State private var cachedWorkouts: [WorkoutSession] = []
+    @State private var cachedGroupedWorkouts: [(key: String, value: [WorkoutSession])] = []
+
+    private func refreshWorkouts() {
+        cachedWorkouts = filterWorkouts()
+        cachedGroupedWorkouts = groupWorkouts(cachedWorkouts)
+    }
+
+    private func filterWorkouts() -> [WorkoutSession] {
         switch selectedFilter {
         case .all:
             return allWorkouts.filter { $0.status == .completed || $0.wasSkipped }
@@ -22,42 +31,98 @@ struct HistoryListView: View {
         }
     }
 
+    private func groupWorkouts(_ workouts: [WorkoutSession]) -> [(key: String, value: [WorkoutSession])] {
+        let grouped = Dictionary(grouping: workouts) { workout in
+            formatDateHeader(workout.startTime)
+        }
+        return grouped.sorted { $0.value.first?.startTime ?? Date() > $1.value.first?.startTime ?? Date() }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Filter picker
-                Picker("Filter", selection: $selectedFilter) {
-                    ForEach(HistoryFilter.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, RepsTheme.Spacing.md)
-                .padding(.vertical, RepsTheme.Spacing.sm)
+                // Filter chips
+                filterRow
+                    .padding(.vertical, RepsTheme.Spacing.sm)
 
                 Group {
-                    if workouts.isEmpty {
+                    if cachedWorkouts.isEmpty {
                         emptyState
                     } else {
                         workoutList
                     }
                 }
             }
-            .background(RepsTheme.Colors.background)
-            .navigationTitle("History")
+            .transparentNavigation()
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    EmptyView()
+                }
+            }
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    GradientTitle(text: "History")
+                    Spacer()
+                }
+                .padding(.horizontal, RepsTheme.Spacing.md)
+                .padding(.top, RepsTheme.Spacing.xl)
+                .padding(.bottom, RepsTheme.Spacing.sm)
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .onAppear {
+                refreshWorkouts()
+            }
+            .onChange(of: allWorkouts.count) { _, _ in
+                refreshWorkouts()
+            }
+            .onChange(of: selectedFilter) { _, _ in
+                refreshWorkouts()
+            }
         }
+    }
+
+    // MARK: - Filter Row
+
+    private var filterRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: RepsTheme.Spacing.xs) {
+                ForEach(HistoryFilter.allCases, id: \.self) { filter in
+                    ADFilterChip(
+                        label: filter.rawValue,
+                        isSelected: selectedFilter == filter
+                    ) {
+                        withAnimation(RepsTheme.Animations.segment) {
+                            selectedFilter = filter
+                        }
+                        HapticManager.filterSelected()
+                    }
+                }
+            }
+            .padding(.horizontal, RepsTheme.Spacing.md)
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 5)
+                .onChanged { _ in }
+        )
     }
 
     private var emptyState: some View {
         VStack(spacing: RepsTheme.Spacing.lg) {
             Spacer()
 
-            Image(systemName: "clock.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(RepsTheme.Colors.textTertiary)
+            ZStack {
+                Circle()
+                    .fill(RepsTheme.Colors.accent.opacity(0.1))
+                    .frame(width: 120, height: 120)
+
+                Image(systemName: "clock.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(RepsTheme.Colors.accent.opacity(0.5))
+            }
 
             Text("No Workout History")
-                .font(RepsTheme.Typography.headline)
+                .font(RepsTheme.Typography.title)
                 .foregroundStyle(RepsTheme.Colors.text)
 
             Text("Complete a workout to see it here")
@@ -68,44 +133,48 @@ struct HistoryListView: View {
             Spacer()
         }
         .padding(RepsTheme.Spacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.clear)
     }
 
     private var workoutList: some View {
         ScrollView {
-            LazyVStack(spacing: RepsTheme.Spacing.md) {
-                ForEach(groupedWorkouts, id: \.key) { group in
-                    Section {
-                        ForEach(group.value) { workout in
-                            NavigationLink {
-                                WorkoutDetailView(workout: workout)
-                            } label: {
-                                WorkoutHistoryCell(workout: workout)
+            LazyVStack(spacing: RepsTheme.Spacing.sm) {
+                ForEach(cachedGroupedWorkouts, id: \.key) { group in
+                    VStack(alignment: .leading, spacing: RepsTheme.Spacing.sm) {
+                        // Section header
+                        Text(group.key)
+                            .font(RepsTheme.Typography.label)
+                            .foregroundStyle(RepsTheme.Colors.textSecondary)
+                            .padding(.horizontal, RepsTheme.Spacing.xs)
+                            .padding(.top, RepsTheme.Spacing.md)
+
+                        // Workout cards
+                        VStack(spacing: RepsTheme.Spacing.xs) {
+                            ForEach(group.value) { workout in
+                                NavigationLink {
+                                    WorkoutDetailView(workout: workout)
+                                } label: {
+                                    WorkoutHistoryCell(workout: workout)
+                                }
+                                .buttonStyle(ScalingPressButtonStyle())
                             }
-                            .buttonStyle(.plain)
                         }
-                    } header: {
-                        HStack {
-                            Text(group.key)
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundStyle(RepsTheme.Colors.textSecondary)
-                            Spacer()
-                        }
-                        .padding(.horizontal, RepsTheme.Spacing.md)
-                        .padding(.top, RepsTheme.Spacing.md)
                     }
                 }
             }
             .padding(.horizontal, RepsTheme.Spacing.md)
-            .padding(.bottom, RepsTheme.Spacing.xl)
+            .padding(.bottom, 70)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
     }
 
-    private var groupedWorkouts: [(key: String, value: [WorkoutSession])] {
-        let grouped = Dictionary(grouping: workouts) { workout in
-            formatDateHeader(workout.startTime)
-        }
-        return grouped.sorted { $0.value.first?.startTime ?? Date() > $1.value.first?.startTime ?? Date() }
-    }
+    private static let monthYearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter
+    }()
 
     private func formatDateHeader(_ date: Date) -> String {
         let calendar = Calendar.current
@@ -116,9 +185,7 @@ struct HistoryListView: View {
         } else if calendar.isDate(date, equalTo: Date(), toGranularity: .weekOfYear) {
             return "THIS WEEK"
         } else {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMMM yyyy"
-            return formatter.string(from: date).uppercased()
+            return Self.monthYearFormatter.string(from: date).uppercased()
         }
     }
 }
@@ -129,59 +196,65 @@ struct WorkoutHistoryCell: View {
     let workout: WorkoutSession
 
     var body: some View {
-        VStack(alignment: .leading, spacing: RepsTheme.Spacing.sm) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: RepsTheme.Spacing.xxs) {
-                    HStack(spacing: RepsTheme.Spacing.xs) {
-                        Text(workout.displayName)
-                            .font(RepsTheme.Typography.headline)
-                            .foregroundStyle(RepsTheme.Colors.text)
+        HStack(spacing: RepsTheme.Spacing.md) {
+            VStack(alignment: .leading, spacing: RepsTheme.Spacing.sm) {
+                // Header
+                HStack {
+                    VStack(alignment: .leading, spacing: RepsTheme.Spacing.xxs) {
+                        HStack(spacing: RepsTheme.Spacing.xs) {
+                            Text(workout.displayName)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(RepsTheme.Colors.text)
 
-                        if workout.wasSkipped {
-                            Text("SKIPPED")
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                .foregroundStyle(.orange)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(Color.orange.opacity(0.2))
-                                )
+                            if workout.wasSkipped {
+                                Text("SKIPPED")
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(RepsTheme.Colors.accent)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(
+                                        Capsule()
+                                            .fill(RepsTheme.Colors.accent.opacity(0.15))
+                                    )
+                            }
                         }
+
+                        Text(formatDate(workout.startTime))
+                            .font(.system(size: 12))
+                            .foregroundStyle(RepsTheme.Colors.textSecondary)
                     }
 
-                    Text(formatDate(workout.startTime))
-                        .font(RepsTheme.Typography.caption)
-                        .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    Spacer()
+
+                    // Difficulty (only show for completed workouts)
+                    if !workout.wasSkipped, let difficulty = workout.rating {
+                        DifficultyGaugeCompact(value: difficulty)
+                    }
                 }
 
-                Spacer()
+                // Stats row
+                HStack(spacing: RepsTheme.Spacing.lg) {
+                    StatPill(icon: "clock", value: workout.formattedDuration)
+                    StatPill(icon: "scalemass", value: "\(Int(workout.totalVolume)) lbs")
+                    StatPill(icon: "checkmark.circle", value: "\(workout.completedSets) sets")
+                }
 
-                // Difficulty (only show for completed workouts)
-                if !workout.wasSkipped, let difficulty = workout.rating {
-                    DifficultyGaugeCompact(value: difficulty)
+                // Exercises preview
+                if !workout.exerciseGroups.isEmpty {
+                    Text(exerciseNames)
+                        .font(.system(size: 12))
+                        .foregroundStyle(RepsTheme.Colors.textTertiary)
+                        .lineLimit(1)
                 }
             }
 
-            // Stats row
-            HStack(spacing: RepsTheme.Spacing.lg) {
-                StatPill(icon: "clock", value: workout.formattedDuration)
-                StatPill(icon: "flame", value: "\(Int(workout.totalVolume)) kg")
-                StatPill(icon: "checkmark.circle", value: "\(workout.completedSets) sets")
-            }
-
-            // Exercises preview
-            if !workout.exerciseGroups.isEmpty {
-                Text(exerciseNames)
-                    .font(RepsTheme.Typography.caption)
-                    .foregroundStyle(RepsTheme.Colors.textTertiary)
-                    .lineLimit(1)
-            }
+            // Chevron
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(RepsTheme.Colors.textTertiary)
         }
         .padding(RepsTheme.Spacing.md)
-        .background(RepsTheme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+        .repsCard()
     }
 
     private var exerciseNames: String {
@@ -192,10 +265,14 @@ struct WorkoutHistoryCell: View {
             .joined(separator: ", ")
     }
 
-    private func formatDate(_ date: Date) -> String {
+    private static let detailDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    private func formatDate(_ date: Date) -> String {
+        Self.detailDateFormatter.string(from: date)
     }
 }
 
@@ -212,7 +289,7 @@ struct StatPill: View {
                 .foregroundStyle(RepsTheme.Colors.accent)
 
             Text(value)
-                .font(RepsTheme.Typography.caption)
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
                 .foregroundStyle(RepsTheme.Colors.textSecondary)
         }
     }

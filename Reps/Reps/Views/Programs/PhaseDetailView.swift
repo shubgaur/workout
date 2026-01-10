@@ -28,9 +28,9 @@ struct PhaseDetailView: View {
             }
             .padding(RepsTheme.Spacing.md)
         }
-        .background(RepsTheme.Colors.background)
         .navigationTitle(phase.name)
         .navigationBarTitleDisplayMode(.large)
+        .transparentNavigation()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

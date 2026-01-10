@@ -18,9 +18,9 @@ struct WeekDetailView: View {
             }
             .padding(RepsTheme.Spacing.md)
         }
-        .background(RepsTheme.Colors.background)
         .navigationTitle("Week \(week.weekNumber)")
         .navigationBarTitleDisplayMode(.large)
+        .transparentNavigation()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

@@ -21,10 +21,11 @@ struct ProgramListView: View {
                     programsList
                 }
             }
-            .background(RepsTheme.Colors.background)
-            .navigationTitle("Programs")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+            .transparentNavigation()
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    GradientTitle(text: "Programs")
+                    Spacer()
                     Menu {
                         Button {
                             showingCreateProgram = true
@@ -38,11 +39,16 @@ struct ProgramListView: View {
                             Label("Import", systemImage: "square.and.arrow.down")
                         }
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 28))
                             .foregroundStyle(RepsTheme.Colors.accent)
                     }
                 }
+                .padding(.horizontal, RepsTheme.Spacing.md)
+                .padding(.top, RepsTheme.Spacing.xl)
+                .padding(.bottom, RepsTheme.Spacing.sm)
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingCreateProgram) {
                 CreateProgramView()
             }
@@ -101,99 +107,64 @@ struct ProgramListView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.clear)
     }
 
     private var programsList: some View {
-        List {
-            ForEach(programs) { program in
-                NavigationLink(destination: ProgramDetailView(program: program)) {
-                    ProgramRow(program: program)
-                }
-                .listRowBackground(RepsTheme.Colors.surface)
-                .listRowSeparatorTint(RepsTheme.Colors.border)
-                .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                    if !program.isActive {
-                        Button {
-                            programToActivate = program
-                        } label: {
-                            Label("Start", systemImage: "play.fill")
-                        }
-                        .tint(.green)
-                    } else if !program.isPaused {
-                        Button {
-                            programToPause = program
-                        } label: {
-                            Label("Pause", systemImage: "pause.fill")
-                        }
-                        .tint(.orange)
-                    } else {
-                        Button {
-                            ScheduleService.resumeProgram(program)
-                        } label: {
-                            Label("Resume", systemImage: "play.fill")
-                        }
-                        .tint(.green)
+        ScrollView {
+            LazyVStack(spacing: RepsTheme.Spacing.sm) {
+                ForEach(programs) { program in
+                    NavigationLink(destination: ProgramDetailView(program: program)) {
+                        ProgramRow(program: program)
+                            .padding(RepsTheme.Spacing.md)
+                            .repsCard()
                     }
-                }
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        programToDelete = program
-                        showingDeleteConfirmation = true
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+                    .buttonStyle(ScalingPressButtonStyle())
+                    .contextMenu {
+                        if !program.isActive {
+                            Button {
+                                programToActivate = program
+                            } label: {
+                                Label("Start Program", systemImage: "play.fill")
+                            }
+                        } else {
+                            Button {
+                                programToPause = program
+                            } label: {
+                                Label("Pause Program", systemImage: "pause.fill")
+                            }
 
-                    if program.isActive {
-                        Button {
-                            ScheduleService.deactivateProgram(program)
-                        } label: {
-                            Label("Stop", systemImage: "stop.fill")
-                        }
-                        .tint(.gray)
-                    }
-                }
-                .contextMenu {
-                    if !program.isActive {
-                        Button {
-                            programToActivate = program
-                        } label: {
-                            Label("Start Program", systemImage: "play.fill")
-                        }
-                    } else {
-                        Button {
-                            programToPause = program
-                        } label: {
-                            Label("Pause Program", systemImage: "pause.fill")
+                            Button {
+                                ScheduleService.deactivateProgram(program)
+                            } label: {
+                                Label("Stop Program", systemImage: "stop.fill")
+                            }
                         }
 
+                        Divider()
+
                         Button {
-                            ScheduleService.deactivateProgram(program)
+                            duplicateProgram(program)
                         } label: {
-                            Label("Stop Program", systemImage: "stop.fill")
+                            Label("Duplicate", systemImage: "doc.on.doc")
                         }
-                    }
 
-                    Divider()
+                        Divider()
 
-                    Button {
-                        duplicateProgram(program)
-                    } label: {
-                        Label("Duplicate", systemImage: "doc.on.doc")
-                    }
-
-                    Divider()
-
-                    Button(role: .destructive) {
-                        programToDelete = program
-                        showingDeleteConfirmation = true
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+                        Button(role: .destructive) {
+                            programToDelete = program
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
                 }
             }
+            .padding(.horizontal, RepsTheme.Spacing.md)
+            .padding(.bottom, 70)
         }
-        .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .background(Color.clear)
     }
 
     private func duplicateProgram(_ program: Program) {
@@ -217,6 +188,12 @@ struct ProgramListView: View {
 
 struct ProgramRow: View {
     let program: Program
+
+    private static let mediumDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter
+    }()
 
     var body: some View {
         HStack(spacing: RepsTheme.Spacing.md) {
@@ -283,17 +260,19 @@ struct ProgramRow: View {
             }
 
             Spacer()
+
+            // Chevron
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(RepsTheme.Colors.textTertiary)
         }
-        .padding(.vertical, RepsTheme.Spacing.xs)
     }
 
     private var programSummary: String {
         if program.isActive && !program.isPaused {
             return program.progressDescription
         } else if program.isPaused, let until = program.pausedUntil {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            return "Resumes \(formatter.string(from: until))"
+            return "Resumes \(Self.mediumDateFormatter.string(from: until))"
         } else {
             let phaseCount = program.phases.count
             let weekCount = program.phases.flatMap { $0.weeks }.count

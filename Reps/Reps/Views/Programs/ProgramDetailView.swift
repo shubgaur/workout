@@ -27,9 +27,9 @@ struct ProgramDetailView: View {
             }
             .padding(RepsTheme.Spacing.md)
         }
-        .background(RepsTheme.Colors.background)
         .navigationTitle(program.name)
         .navigationBarTitleDisplayMode(.large)
+        .transparentNavigation()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
