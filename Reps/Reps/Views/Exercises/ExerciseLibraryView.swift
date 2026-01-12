@@ -12,6 +12,7 @@ struct ExerciseLibraryView: View {
     @State private var exerciseToEdit: Exercise?
     @State private var showingDeleteConfirmation = false
     @State private var exerciseToDelete: Exercise?
+    @State private var showingCreateExercise = false
 
     var filteredExercises: [Exercise] {
         exercises.filter { exercise in
@@ -29,39 +30,109 @@ struct ExerciseLibraryView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Filter chips
-                filterChipsSection
-
-                // Exercise list
-                if filteredExercises.isEmpty {
-                    emptyStateView
-                } else {
-                    exerciseList
-                }
-            }
-            .transparentNavigation()
-            .navigationBarHidden(true)
-            .searchable(text: $searchText, prompt: "Search exercises")
-            .safeAreaInset(edge: .top) {
-                HStack {
-                    GradientTitle(text: "Exercises")
-                    Spacer()
-                    Button {
-                        showingFilters.toggle()
-                    } label: {
-                        Image(systemName: showingFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-                            .font(.system(size: 24))
-                            .foregroundStyle(hasActiveFilters ? RepsTheme.Colors.accent : RepsTheme.Colors.textSecondary)
+        ZStack(alignment: .bottomTrailing) {
+            NavigationStack {
+                Group {
+                    if filteredExercises.isEmpty {
+                        emptyStateView
+                    } else {
+                        exerciseListWithFilters
                     }
                 }
-                .padding(.horizontal, RepsTheme.Spacing.md)
-                .padding(.top, RepsTheme.Spacing.xl)
-                .padding(.bottom, RepsTheme.Spacing.sm)
+                .transparentNavigation()
+                .searchable(text: $searchText, prompt: "Search exercises")
+                .safeAreaInset(edge: .top) {
+                    HStack {
+                        GradientTitle(text: "Exercises")
+                        Spacer()
+                        Button {
+                            showingFilters.toggle()
+                        } label: {
+                            Image(systemName: showingFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                                .font(.system(size: 24))
+                                .foregroundStyle(hasActiveFilters ? RepsTheme.Colors.accent : RepsTheme.Colors.textSecondary)
+                        }
+                    }
+                    .padding(.horizontal, RepsTheme.Spacing.md)
+                    .padding(.top, RepsTheme.Spacing.xl)
+                    .padding(.bottom, RepsTheme.Spacing.sm)
+                }
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .sheet(isPresented: $showingCreateExercise) {
+                    CreateExerciseView()
+                }
             }
-            .toolbarBackground(.hidden, for: .navigationBar)
+
+            // Floating button - completely outside NavigationStack
+            LiquidMetalPillButton(icon: "plus", title: "New Exercise") {
+                showingCreateExercise = true
+            }
+            .padding(.trailing, RepsTheme.Spacing.md)
+            .padding(.bottom, 20)
         }
+    }
+
+    private var exerciseListWithFilters: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                filterChipsSection
+                exerciseListContent
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
+        .sheet(item: $exerciseToEdit) { exercise in
+            ExerciseDetailView(exercise: exercise)
+        }
+        .alert("Delete Exercise?", isPresented: $showingDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {
+                exerciseToDelete = nil
+            }
+            Button("Delete", role: .destructive) {
+                if let exercise = exerciseToDelete {
+                    deleteExercise(exercise)
+                }
+            }
+        } message: {
+            Text("This will permanently delete \"\(exerciseToDelete?.name ?? "")\".")
+        }
+    }
+
+    private var exerciseListContent: some View {
+        LazyVStack(spacing: RepsTheme.Spacing.sm) {
+            ForEach(filteredExercises) { exercise in
+                NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                    ExerciseCell(exercise: exercise)
+                        .padding(RepsTheme.Spacing.md)
+                        .repsCard()
+                }
+                .buttonStyle(ScalingPressButtonStyle())
+                .contextMenu {
+                    Button {
+                        exerciseToEdit = exercise
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+
+                    Button {
+                        duplicateExercise(exercise)
+                    } label: {
+                        Label("Duplicate", systemImage: "doc.on.doc")
+                    }
+
+                    if exercise.isCustom {
+                        Button(role: .destructive) {
+                            exerciseToDelete = exercise
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, RepsTheme.Spacing.md)
+        .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
     }
 
     private var hasActiveFilters: Bool {
@@ -128,62 +199,6 @@ struct ExerciseLibraryView: View {
             }
             .padding(.vertical, RepsTheme.Spacing.sm)
             .background(Color.clear)
-        }
-    }
-
-    private var exerciseList: some View {
-        ScrollView {
-            LazyVStack(spacing: RepsTheme.Spacing.sm) {
-                ForEach(filteredExercises) { exercise in
-                    NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                        ExerciseCell(exercise: exercise)
-                            .padding(RepsTheme.Spacing.md)
-                            .repsCard()
-                    }
-                    .buttonStyle(ScalingPressButtonStyle())
-                    .contextMenu {
-                        Button {
-                            exerciseToEdit = exercise
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
-                        }
-
-                        Button {
-                            duplicateExercise(exercise)
-                        } label: {
-                            Label("Duplicate", systemImage: "doc.on.doc")
-                        }
-
-                        if exercise.isCustom {
-                            Button(role: .destructive) {
-                                exerciseToDelete = exercise
-                                showingDeleteConfirmation = true
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal, RepsTheme.Spacing.md)
-            .padding(.bottom, 70)
-        }
-        .scrollContentBackground(.hidden)
-        .background(Color.clear)
-        .sheet(item: $exerciseToEdit) { exercise in
-            ExerciseDetailView(exercise: exercise)
-        }
-        .alert("Delete Exercise?", isPresented: $showingDeleteConfirmation) {
-            Button("Cancel", role: .cancel) {
-                exerciseToDelete = nil
-            }
-            Button("Delete", role: .destructive) {
-                if let exercise = exerciseToDelete {
-                    deleteExercise(exercise)
-                }
-            }
-        } message: {
-            Text("This will permanently delete \"\(exerciseToDelete?.name ?? "")\".")
         }
     }
 

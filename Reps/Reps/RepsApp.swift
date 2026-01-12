@@ -6,6 +6,10 @@ struct RepsApp: App {
     let container: ModelContainer
 
     init() {
+        // Pre-warm MotionManager so all cards see same initial state
+        // This ensures synchronized glint movement across all views
+        MotionManager.shared.startUpdates()
+
         do {
             let schema = Schema([
                 Exercise.self,
