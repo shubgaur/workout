@@ -164,7 +164,7 @@ struct HistoryListView: View {
                 }
             }
             .padding(.horizontal, RepsTheme.Spacing.md)
-            .padding(.bottom, 70)
+            .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear)

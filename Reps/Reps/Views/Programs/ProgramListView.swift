@@ -14,35 +14,27 @@ struct ProgramListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if programs.isEmpty {
-                    emptyState
-                } else {
-                    programsList
+            ZStack(alignment: .bottomTrailing) {
+                Group {
+                    if programs.isEmpty {
+                        emptyState
+                    } else {
+                        programsList
+                    }
                 }
+
+                // Floating New Program pill button
+                LiquidMetalPillButton(icon: "plus", title: "New Program") {
+                    showingCreateProgram = true
+                }
+                .padding(.trailing, RepsTheme.Spacing.md)
+                .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
             }
             .transparentNavigation()
             .safeAreaInset(edge: .top) {
                 HStack {
                     GradientTitle(text: "Programs")
                     Spacer()
-                    Menu {
-                        Button {
-                            showingCreateProgram = true
-                        } label: {
-                            Label("Create Program", systemImage: "plus")
-                        }
-
-                        Button {
-                            showingImportProgram = true
-                        } label: {
-                            Label("Import", systemImage: "square.and.arrow.down")
-                        }
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(RepsTheme.Colors.accent)
-                    }
                 }
                 .padding(.horizontal, RepsTheme.Spacing.md)
                 .padding(.top, RepsTheme.Spacing.xl)
@@ -161,7 +153,7 @@ struct ProgramListView: View {
                 }
             }
             .padding(.horizontal, RepsTheme.Spacing.md)
-            .padding(.bottom, 70)
+            .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear)

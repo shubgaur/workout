@@ -33,7 +33,7 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, RepsTheme.Spacing.md)
                 .padding(.top, RepsTheme.Spacing.sm)
-                .padding(.bottom, 70)
+                .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
             }
             .transparentNavigation()
             .navigationBarTitleDisplayMode(.large)

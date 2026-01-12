@@ -17,7 +17,6 @@ struct SkipDelaySheet: View {
     private var nextWorkoutName: String {
         // Peek at next workout
         let currentDayIndex = program.currentDayIndex
-        let currentWeekIndex = program.currentWeekIndex
 
         guard let week = program.currentWeek else { return "next workout" }
         let days = week.sortedDays.filter { $0.dayType == .training }

@@ -3,54 +3,47 @@ import SwiftData
 
 struct ContentView: View {
     @State private var selectedTab: Tab = .home
+    @State private var scrubProgress: CGFloat? = nil
     @State private var activeWorkoutSession: WorkoutSession?
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ZStack {
-            // Background
-            RepsTheme.Colors.background
-                .ignoresSafeArea()
+            // Root gradient background - single source of truth
+            MetalGradientView(
+                palette: PaletteManager.shared.activePalette,
+                speed: 0.3,
+                brightness: 0.5
+            )
+            .ignoresSafeArea()
 
-            // Tab Content
-            TabView(selection: $selectedTab) {
-                HomeView(onStartWorkout: startWorkout)
-                    .tabItem {
-                        Label("Home", systemImage: "house.fill")
-                    }
-                    .tag(Tab.home)
-
-                ProgramListView()
-                    .tabItem {
-                        Label("Programs", systemImage: "calendar")
-                    }
-                    .tag(Tab.programs)
-
-                ExerciseLibraryView()
-                    .tabItem {
-                        Label("Exercises", systemImage: "dumbbell.fill")
-                    }
-                    .tag(Tab.exercises)
-
-                HistoryListView()
-                    .tabItem {
-                        Label("History", systemImage: "clock.fill")
-                    }
-                    .tag(Tab.history)
-
-                ProfileView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person.fill")
-                    }
-                    .tag(Tab.profile)
-            }
-            .tint(RepsTheme.Colors.accent)
+            // Tab content with custom switching
+            tabContent
         }
-        // Respects system light/dark mode setting
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CustomTabBar(selectedTab: $selectedTab, scrubProgress: $scrubProgress)
+        }
+        .preferredColorScheme(.dark)
         .fullScreenCover(item: $activeWorkoutSession) { session in
             ActiveWorkoutView(session: session) {
                 activeWorkoutSession = nil
             }
+        }
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .home:
+            HomeView(onStartWorkout: startWorkout)
+        case .programs:
+            LazyView(ProgramListView())
+        case .exercises:
+            LazyView(ExerciseLibraryView())
+        case .history:
+            LazyView(HistoryListView())
+        case .profile:
+            LazyView(ProfileView())
         }
     }
 
@@ -113,24 +106,35 @@ struct HomeView: View {
     var onStartWorkout: (WorkoutTemplate?, ProgramDay?) -> Void
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: RepsTheme.Spacing.lg) {
-                    // Quick Start Card
-                    QuickStartCard {
-                        onStartWorkout(nil, nil)
-                    }
-
-                    // Today's Workout
-                    TodayWorkoutCard(onStartWorkout: onStartWorkout)
-
-                    // Recent Workouts (placeholder)
-                    RecentWorkoutsSection()
+        ScrollView {
+            VStack(spacing: RepsTheme.Spacing.lg) {
+                // Quick Start Card
+                QuickStartCard {
+                    onStartWorkout(nil, nil)
                 }
-                .padding(RepsTheme.Spacing.md)
+
+                // Today's Workout
+                TodayWorkoutCard(onStartWorkout: onStartWorkout)
+
+                // Recent Workouts (placeholder)
+                RecentWorkoutsSection()
             }
-            .background(RepsTheme.Colors.background)
-            .navigationTitle("Reps")
+            .padding(RepsTheme.Spacing.md)
+            .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
+        .safeAreaInset(edge: .top) {
+            // Title header
+            HStack {
+                Text("Reps")
+                    .font(RepsTheme.Typography.largeTitle)
+                    .foregroundStyle(RepsTheme.Colors.text)
+                Spacer()
+            }
+            .padding(.horizontal, RepsTheme.Spacing.md)
+            .padding(.top, RepsTheme.Spacing.md)
+            .padding(.bottom, RepsTheme.Spacing.sm)
         }
     }
 }
@@ -152,9 +156,10 @@ struct QuickStartCard: View {
 
                 Spacer()
 
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundColor(RepsTheme.Colors.accent)
+                // Liquid metal + button
+                LiquidMetalIconButton(icon: "plus", action: {
+                    onTap()
+                }, size: 44)
             }
             .padding(RepsTheme.Spacing.md)
             .repsCard()
@@ -316,10 +321,9 @@ struct NextWorkoutCard: View {
                 }
             } label: {
                 Text("Start Early")
-                    .font(RepsTheme.Typography.subheadline)
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(RepsButtonStyle(style: .secondary))
+            .buttonStyle(LiquidMetalButtonStyle())
         }
         .padding(RepsTheme.Spacing.md)
         .repsCard()
@@ -476,39 +480,18 @@ struct HistoryView: View {
                     message: "Complete a workout to see your history"
                 )
                 .padding(RepsTheme.Spacing.md)
+                .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
             }
-            .background(RepsTheme.Colors.background)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationTitle("History")
         }
     }
 }
 
 // ProfileView and SettingsView are in Views/Profile/
-
-struct EmptyStateView: View {
-    let icon: String
-    let title: String
-    let message: String
-
-    var body: some View {
-        VStack(spacing: RepsTheme.Spacing.md) {
-            Image(systemName: icon)
-                .font(.system(size: 48))
-                .foregroundColor(RepsTheme.Colors.textTertiary)
-
-            Text(title)
-                .font(RepsTheme.Typography.title3)
-                .foregroundColor(RepsTheme.Colors.text)
-
-            Text(message)
-                .font(RepsTheme.Typography.body)
-                .foregroundColor(RepsTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(RepsTheme.Spacing.xxl)
-    }
-}
+// EmptyStateView is in Views/Components/EmptyStateView.swift
 
 // MARK: - Preview
 

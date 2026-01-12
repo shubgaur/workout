@@ -28,6 +28,16 @@ enum RepsTheme {
         static let border = Color("Border", bundle: nil)
         static let divider = Color("Divider", bundle: nil)
 
+        // Chart colors
+        static let chartGreen = Color(hex: "34C759")
+        static let chartRed = Color(hex: "FF3B30")
+        static let chartLine = Color(hex: "FF5500") // Same as accent
+
+        // Gradient colors for progress rings and bars
+        static let gradientDark = Color(hex: "FF3D00")
+        static let gradientMid = Color(hex: "FF5500")
+        static let gradientLight = Color(hex: "FF8A50")
+
         // Fallback colors for when asset catalog isn't set up
         enum Dark {
             static let background = Color(hex: "0A0A0A")
@@ -73,6 +83,14 @@ enum RepsTheme {
         static let mono = Font.system(size: 17, weight: .medium, design: .monospaced)
         static let monoLarge = Font.system(size: 24, weight: .bold, design: .monospaced)
         static let monoSmall = Font.system(size: 14, weight: .medium, design: .monospaced)
+
+        // Metric display
+        static let metricLarge = Font.system(size: 32, weight: .bold, design: .rounded)
+        static let metricMedium = Font.system(size: 24, weight: .bold, design: .rounded)
+
+        // Labels and captions
+        static let label = Font.system(size: 11, weight: .semibold, design: .rounded)
+        static let labelSmall = Font.system(size: 9, weight: .semibold, design: .rounded)
     }
 
     // MARK: Spacing
@@ -85,6 +103,9 @@ enum RepsTheme {
         static let lg: CGFloat = 24
         static let xl: CGFloat = 32
         static let xxl: CGFloat = 48
+
+        /// Safe area padding for content above custom tab bar (56 + padding)
+        static let tabBarSafeArea: CGFloat = 80
     }
 
     // MARK: Corner Radius
@@ -103,6 +124,19 @@ enum RepsTheme {
         static let md = ShadowStyle(color: .black.opacity(0.4), radius: 4, x: 0, y: 2)
         static let lg = ShadowStyle(color: .black.opacity(0.5), radius: 8, x: 0, y: 4)
         static let inner = ShadowStyle(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+    }
+
+    // MARK: Animations
+    enum Animations {
+        static let smooth = Animation.easeInOut(duration: 0.3)
+        static let segment = Animation.spring(response: 0.3, dampingFraction: 0.7)
+        static let selection = Animation.spring(response: 0.25, dampingFraction: 0.8)
+        static let buttonPress = Animation.easeInOut(duration: 0.1)
+        static let press = Animation.easeInOut(duration: 0.15)
+        static let tabTransition = Animation.spring(response: 0.35, dampingFraction: 0.75)
+        static let expand = Animation.spring(response: 0.4, dampingFraction: 0.7)
+        static let toast = Animation.spring(response: 0.5, dampingFraction: 0.7)
+        static let overlay = Animation.easeInOut(duration: 0.25)
     }
 }
 
@@ -150,7 +184,7 @@ struct RepsCardStyle: ViewModifier {
         content
             .background(
                 RoundedRectangle(cornerRadius: RepsTheme.Radius.md)
-                    .fill(isPressed ? RepsTheme.Colors.surfacePressed : RepsTheme.Colors.surface)
+                    .fill((isPressed ? RepsTheme.Colors.surfacePressed : RepsTheme.Colors.surface).opacity(0.85))
                     .shadow(
                         color: RepsTheme.Shadow.md.color,
                         radius: RepsTheme.Shadow.md.radius,
@@ -158,10 +192,7 @@ struct RepsCardStyle: ViewModifier {
                         y: RepsTheme.Shadow.md.y
                     )
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: RepsTheme.Radius.md)
-                    .stroke(RepsTheme.Colors.border, lineWidth: 1)
-            )
+            .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
     }
 }
 
