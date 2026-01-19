@@ -5,91 +5,94 @@ import SwiftUI
 /// Alias to use new holographic shader for all gradient titles
 typealias GradientTitle = HolographicText
 
-/// Premium title text with holographic rainbow shift, parallax, and dynamic shadows
-/// Uses Metal shader for GPU-accelerated effect
+/// Premium title text with subtle iridescent effect, parallax, and dynamic shadows
+/// Uses theme-aware colors from PaletteManager
 /// Responds to unified light source from MotionManager
 struct HolographicText: View {
     let text: String
-    var fontSize: CGFloat = 34
-    var parallaxIntensity: CGFloat = 3   // Degrees of rotation
+    var fontSize: CGFloat = 38
+    var parallaxIntensity: CGFloat = 4   // Degrees of rotation (increased for visibility)
     var shadowIntensity: CGFloat = 0.4
-    var useShimmer: Bool = false         // Use subtle shimmer variant
 
     @ObservedObject private var motion = MotionManager.shared
+    @ObservedObject private var paletteManager = PaletteManager.shared
     @Environment(\.accessibilityReduceMotion) var reduceMotion
-    @State private var startDate = Date.now
-    @State private var size: CGSize = .zero
 
-    private var accentHue: Float {
-        let uiColor = UIColor(RepsTheme.Colors.accent)
+    // Extract hue from active palette's accent color
+    private var accentHue: CGFloat {
+        let uiColor = UIColor(paletteManager.activePalette.accent)
         var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         uiColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
-        return Float(h)
+        return h
+    }
+
+    // Subtle gradient based on theme accent color
+    private var subtleGradient: LinearGradient {
+        let h = accentHue
+        let angle = motion.lightAngle
+
+        // Subtle hue variation: ±0.04 around theme accent (lighter/pastel colors)
+        let colors: [Color] = [
+            Color(hue: max(0, h - 0.04), saturation: 0.6, brightness: 0.98),
+            Color(hue: h, saturation: 0.5, brightness: 1.0),  // Pure accent brightness
+            Color(hue: min(1, h + 0.04), saturation: 0.6, brightness: 0.98),
+        ]
+
+        // Gradient angle shifts with device tilt (reduced multiplier for slower color shift)
+        let gradientAngle = Angle(degrees: angle + motion.roll * 8)
+
+        return LinearGradient(
+            colors: colors,
+            startPoint: UnitPoint(
+                x: 0.5 + cos(gradientAngle.radians) * 0.5,
+                y: 0.5 + sin(gradientAngle.radians) * 0.5
+            ),
+            endPoint: UnitPoint(
+                x: 0.5 - cos(gradientAngle.radians) * 0.5,
+                y: 0.5 - sin(gradientAngle.radians) * 0.5
+            )
+        )
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0/30.0, paused: reduceMotion)) { timeline in
-            let time = Float(timeline.date.timeIntervalSince(startDate))
-            // Use estimated size based on font for shader, avoiding zero-size issue
-            let effectiveWidth = max(size.width, fontSize * CGFloat(text.count) * 0.6)
-            let effectiveHeight = max(size.height, fontSize * 1.2)
-
-            Text(text)
-                .font(.system(size: fontSize, weight: .bold, design: .rounded))
-                .foregroundStyle(holographicShaderSafe(time: time, width: effectiveWidth, height: effectiveHeight))
-                .rotation3DEffect(
-                    .degrees(reduceMotion ? 0 : motion.pitch * parallaxIntensity),
-                    axis: (x: 1, y: 0, z: 0),
-                    perspective: 0.5
-                )
-                .rotation3DEffect(
-                    .degrees(reduceMotion ? 0 : motion.roll * parallaxIntensity),
-                    axis: (x: 0, y: 1, z: 0),
-                    perspective: 0.5
-                )
-                .shadow(
-                    color: RepsTheme.Colors.accent.opacity(shadowIntensity),
-                    radius: 4 + abs(motion.roll) * 2,
-                    x: CGFloat(motion.roll * 4),
-                    y: CGFloat(motion.pitch * 4)
-                )
-                .shadow(
-                    color: .black.opacity(0.3),
-                    radius: 2,
-                    x: 0,
-                    y: 2
-                )
-        }
-        .drawingGroup()  // GPU-accelerate composite of shader + rotations + shadows
-        .background(
-            GeometryReader { geo in
-                Color.clear
-                    .onAppear { size = geo.size }
-                    .onChange(of: geo.size) { _, newSize in size = newSize }
-            }
+        Text(text)
+            .font(.system(size: fontSize, weight: .heavy, design: .rounded))
+            .foregroundStyle(subtleGradient)
+        // Subtle drop shadow for depth
+        .shadow(
+            color: .black.opacity(0.3),
+            radius: 4,
+            x: 0,
+            y: 4
         )
-        .animation(.spring(response: 0.2, dampingFraction: 0.8), value: motion.pitch)
-        .animation(.spring(response: 0.2, dampingFraction: 0.8), value: motion.roll)
+        // Extra padding to prevent clipping when offset moves text
+        .padding(24)
+        // PARALLAX: Position offset based on tilt (very pronounced movement)
+        .offset(
+            x: reduceMotion ? 0 : CGFloat(motion.roll * 12),
+            y: reduceMotion ? 0 : CGFloat(motion.pitch * 8)
+        )
+        // PARALLAX: 3D rotation based on tilt (16 degrees on both axes)
+        .rotation3DEffect(
+            .degrees(reduceMotion ? 0 : motion.pitch * 16),
+            axis: (x: 1, y: 0, z: 0),
+            perspective: 0.5
+        )
+        .rotation3DEffect(
+            .degrees(reduceMotion ? 0 : motion.roll * 16),
+            axis: (x: 0, y: 1, z: 0),
+            perspective: 0.5
+        )
+        // CRITICAL: Flatten to single layer - prevents letter jiggling
+        .drawingGroup()
+        // Remove the extra padding after flattening (keeps layout correct)
+        .padding(-24)
+        // Snappy spring animations
+        .animation(.spring(response: 0.15, dampingFraction: 0.8), value: motion.pitch)
+        .animation(.spring(response: 0.15, dampingFraction: 0.8), value: motion.roll)
+        .animation(.spring(response: 0.15, dampingFraction: 0.8), value: motion.lightAngle)
         .onAppear { motion.startUpdates() }
         .onDisappear { motion.stopUpdates() }
-    }
-
-    private func holographicShaderSafe(time: Float, width: CGFloat, height: CGFloat) -> Shader {
-        if useShimmer {
-            return ShaderLibrary.shimmerText(
-                .float2(Float(width), Float(height)),
-                .float(Float(motion.lightAngle)),
-                .float(time),
-                .float(accentHue)
-            )
-        } else {
-            return ShaderLibrary.holographicText(
-                .float2(Float(width), Float(height)),
-                .float(Float(motion.lightAngle)),
-                .float(time),
-                .float(accentHue)
-            )
-        }
     }
 }
 
@@ -97,55 +100,50 @@ struct HolographicText: View {
 
 struct HolographicModifier: ViewModifier {
     var intensity: CGFloat = 0.8
-    var useShimmer: Bool = false
 
     @ObservedObject private var motion = MotionManager.shared
+    @ObservedObject private var paletteManager = PaletteManager.shared
     @Environment(\.accessibilityReduceMotion) var reduceMotion
-    @State private var startDate = Date.now
-    @State private var size: CGSize = .zero
 
-    private var accentHue: Float {
-        let uiColor = UIColor(RepsTheme.Colors.accent)
+    // Extract hue from active palette's accent color
+    private var accentHue: CGFloat {
+        let uiColor = UIColor(paletteManager.activePalette.accent)
         var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         uiColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
-        return Float(h)
+        return h
+    }
+
+    private var subtleGradient: LinearGradient {
+        let h = accentHue
+        let angle = motion.lightAngle
+
+        let colors: [Color] = [
+            Color(hue: max(0, h - 0.04), saturation: 0.75 * intensity, brightness: 0.92),
+            Color(hue: h, saturation: 0.65 * intensity, brightness: 1.0),
+            Color(hue: min(1, h + 0.04), saturation: 0.75 * intensity, brightness: 0.92),
+        ]
+
+        let gradientAngle = Angle(degrees: angle)
+
+        return LinearGradient(
+            colors: colors,
+            startPoint: UnitPoint(
+                x: 0.5 + cos(gradientAngle.radians) * 0.5,
+                y: 0.5 + sin(gradientAngle.radians) * 0.5
+            ),
+            endPoint: UnitPoint(
+                x: 0.5 - cos(gradientAngle.radians) * 0.5,
+                y: 0.5 - sin(gradientAngle.radians) * 0.5
+            )
+        )
     }
 
     func body(content: Content) -> some View {
-        TimelineView(.animation(minimumInterval: 1.0/30.0, paused: reduceMotion)) { timeline in
-            let time = Float(timeline.date.timeIntervalSince(startDate))
-
-            content
-                .foregroundStyle(shader(time: time))
-        }
-        .drawingGroup()  // GPU-accelerate shader composite
-        .background(
-            GeometryReader { geo in
-                Color.clear
-                    .onAppear { size = geo.size }
-                    .onChange(of: geo.size) { _, newSize in size = newSize }
-            }
-        )
-        .onAppear { motion.startUpdates() }
-        .onDisappear { motion.stopUpdates() }
-    }
-
-    private func shader(time: Float) -> Shader {
-        if useShimmer {
-            return ShaderLibrary.shimmerText(
-                .float2(Float(size.width), Float(size.height)),
-                .float(Float(motion.lightAngle)),
-                .float(time),
-                .float(accentHue)
-            )
-        } else {
-            return ShaderLibrary.holographicText(
-                .float2(Float(size.width), Float(size.height)),
-                .float(Float(motion.lightAngle)),
-                .float(time),
-                .float(accentHue)
-            )
-        }
+        content
+            .foregroundStyle(subtleGradient)
+            .animation(.spring(response: 0.15, dampingFraction: 0.8), value: motion.lightAngle)
+            .onAppear { motion.startUpdates() }
+            .onDisappear { motion.stopUpdates() }
     }
 }
 
@@ -153,8 +151,8 @@ struct HolographicModifier: ViewModifier {
 
 extension View {
     /// Apply holographic effect to any view (text works best)
-    func holographic(intensity: CGFloat = 0.8, shimmer: Bool = false) -> some View {
-        modifier(HolographicModifier(intensity: intensity, useShimmer: shimmer))
+    func holographic(intensity: CGFloat = 0.8) -> some View {
+        modifier(HolographicModifier(intensity: intensity))
     }
 }
 
@@ -165,11 +163,11 @@ extension View {
         HolographicText(text: "Workout")
             .padding()
 
-        HolographicText(text: "Premium", fontSize: 28, useShimmer: true)
+        HolographicText(text: "Premium", fontSize: 28)
 
-        Text("Shimmer")
+        Text("Modifier")
             .font(.system(size: 24, weight: .bold))
-            .holographic(shimmer: true)
+            .holographic()
 
         // Side-by-side comparison
         HStack(spacing: 24) {
@@ -177,7 +175,7 @@ extension View {
                 Text("Holo")
                     .font(.title.bold())
                     .holographic()
-                Text("With shader")
+                Text("With gradient")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

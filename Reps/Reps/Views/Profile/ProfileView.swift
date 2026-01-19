@@ -14,6 +14,7 @@ struct ProfileView: View {
     @State private var cachedVolumeData: [ChartDataPoint] = []
     @State private var cachedPreviousData: [ChartDataPoint]?
     @State private var needsRefresh = true
+    @State private var headerState = CollapsingHeaderState()
 
     var body: some View {
         NavigationStack {
@@ -42,15 +43,16 @@ struct ProfileView: View {
                     EmptyView()
                 }
             }
-            .safeAreaInset(edge: .top) {
-                // Custom gradient title
-                HStack {
-                    GradientTitle(text: "Profile")
-                    Spacer()
-                }
-                .padding(.horizontal, RepsTheme.Spacing.md)
-                .padding(.top, RepsTheme.Spacing.xl)
-                .padding(.bottom, RepsTheme.Spacing.sm)
+            .onScrollGeometryChange(for: CGFloat.self) { geo in
+                geo.contentOffset.y + geo.contentInsets.top
+            } action: { old, new in
+                headerState.handleScroll(oldOffset: old, newOffset: new)
+            }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                CollapsingIridescentHeader(
+                    title: "Profile",
+                    isVisible: headerState.isVisibleBinding
+                )
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear {

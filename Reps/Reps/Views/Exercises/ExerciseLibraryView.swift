@@ -13,6 +13,7 @@ struct ExerciseLibraryView: View {
     @State private var showingDeleteConfirmation = false
     @State private var exerciseToDelete: Exercise?
     @State private var showingCreateExercise = false
+    @State private var headerState = CollapsingHeaderState()
 
     var filteredExercises: [Exercise] {
         exercises.filter { exercise in
@@ -41,10 +42,11 @@ struct ExerciseLibraryView: View {
                 }
                 .transparentNavigation()
                 .searchable(text: $searchText, prompt: "Search exercises")
-                .safeAreaInset(edge: .top) {
-                    HStack {
-                        GradientTitle(text: "Exercises")
-                        Spacer()
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    CollapsingIridescentHeader(
+                        title: "Exercises",
+                        isVisible: headerState.isVisibleBinding
+                    ) {
                         Button {
                             showingFilters.toggle()
                         } label: {
@@ -53,9 +55,6 @@ struct ExerciseLibraryView: View {
                                 .foregroundStyle(hasActiveFilters ? RepsTheme.Colors.accent : RepsTheme.Colors.textSecondary)
                         }
                     }
-                    .padding(.horizontal, RepsTheme.Spacing.md)
-                    .padding(.top, RepsTheme.Spacing.xl)
-                    .padding(.bottom, RepsTheme.Spacing.sm)
                 }
                 .toolbarBackground(.hidden, for: .navigationBar)
                 .sheet(isPresented: $showingCreateExercise) {
@@ -81,6 +80,11 @@ struct ExerciseLibraryView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear)
+        .onScrollGeometryChange(for: CGFloat.self) { geo in
+            geo.contentOffset.y + geo.contentInsets.top
+        } action: { old, new in
+            headerState.handleScroll(oldOffset: old, newOffset: new)
+        }
         .sheet(item: $exerciseToEdit) { exercise in
             ExerciseDetailView(exercise: exercise)
         }

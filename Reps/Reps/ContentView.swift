@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var selectedTab: Tab = .home
     @State private var scrubProgress: CGFloat? = nil
     @State private var activeWorkoutSession: WorkoutSession?
+    @State private var dragOffset: CGFloat = 0
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -20,6 +21,34 @@ struct ContentView: View {
             // Tab content with custom switching
             tabContent
         }
+        // Horizontal swipe gesture for tab switching
+        .gesture(
+            DragGesture(minimumDistance: 50)
+                .onChanged { value in
+                    // Only track horizontal movement
+                    if abs(value.translation.width) > abs(value.translation.height) {
+                        dragOffset = value.translation.width
+                    }
+                }
+                .onEnded { value in
+                    let threshold: CGFloat = 100
+                    let tabs = Tab.allCases
+                    guard let currentIndex = tabs.firstIndex(of: selectedTab) else { return }
+
+                    withAnimation(RepsTheme.Animations.tabTransition) {
+                        if value.translation.width > threshold && currentIndex > 0 {
+                            // Swipe right → previous tab
+                            selectedTab = tabs[currentIndex - 1]
+                            HapticManager.tabChanged()
+                        } else if value.translation.width < -threshold && currentIndex < tabs.count - 1 {
+                            // Swipe left → next tab
+                            selectedTab = tabs[currentIndex + 1]
+                            HapticManager.tabChanged()
+                        }
+                    }
+                    dragOffset = 0
+                }
+        )
         .safeAreaInset(edge: .bottom, spacing: 0) {
             CustomTabBar(selectedTab: $selectedTab, scrubProgress: $scrubProgress)
         }
@@ -104,6 +133,7 @@ enum Tab: String, CaseIterable {
 
 struct HomeView: View {
     var onStartWorkout: (WorkoutTemplate?, ProgramDay?) -> Void
+    @State private var headerState = CollapsingHeaderState()
 
     var body: some View {
         ScrollView {
@@ -124,17 +154,16 @@ struct HomeView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear)
-        .safeAreaInset(edge: .top) {
-            // Title header
-            HStack {
-                Text("Reps")
-                    .font(RepsTheme.Typography.largeTitle)
-                    .foregroundStyle(RepsTheme.Colors.text)
-                Spacer()
-            }
-            .padding(.horizontal, RepsTheme.Spacing.md)
-            .padding(.top, RepsTheme.Spacing.md)
-            .padding(.bottom, RepsTheme.Spacing.sm)
+        .onScrollGeometryChange(for: CGFloat.self) { geo in
+            geo.contentOffset.y + geo.contentInsets.top  // Include header space for accurate detection
+        } action: { old, new in
+            headerState.handleScroll(oldOffset: old, newOffset: new)
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            CollapsingIridescentHeader(
+                title: "Reps",
+                isVisible: headerState.isVisibleBinding
+            )
         }
     }
 }
@@ -341,7 +370,7 @@ struct PausedProgramCard: View {
             HStack {
                 Image(systemName: "pause.circle.fill")
                     .font(.system(size: 24))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(RepsTheme.Colors.accent)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(program.name)

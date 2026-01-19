@@ -14,6 +14,7 @@ struct HistoryListView: View {
     // Cached computed values for performance
     @State private var cachedWorkouts: [WorkoutSession] = []
     @State private var cachedGroupedWorkouts: [(key: String, value: [WorkoutSession])] = []
+    @State private var headerState = CollapsingHeaderState()
 
     private func refreshWorkouts() {
         cachedWorkouts = filterWorkouts()
@@ -60,14 +61,11 @@ struct HistoryListView: View {
                     EmptyView()
                 }
             }
-            .safeAreaInset(edge: .top) {
-                HStack {
-                    GradientTitle(text: "History")
-                    Spacer()
-                }
-                .padding(.horizontal, RepsTheme.Spacing.md)
-                .padding(.top, RepsTheme.Spacing.xl)
-                .padding(.bottom, RepsTheme.Spacing.sm)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                CollapsingIridescentHeader(
+                    title: "History",
+                    isVisible: headerState.isVisibleBinding
+                )
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear {
@@ -168,6 +166,11 @@ struct HistoryListView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear)
+        .onScrollGeometryChange(for: CGFloat.self) { geo in
+            geo.contentOffset.y + geo.contentInsets.top
+        } action: { old, new in
+            headerState.handleScroll(oldOffset: old, newOffset: new)
+        }
     }
 
     private static let monthYearFormatter: DateFormatter = {
