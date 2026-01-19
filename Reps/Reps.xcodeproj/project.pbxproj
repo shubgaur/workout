@@ -21,6 +21,7 @@
 		357B72DF8470CCDEC49D4FA1 /* Transitions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C3647EF53BD947071DCCEE /* Transitions.swift */; };
 		380653E5559AEDC6726BD813 /* liquid-metal-border.metal in Sources */ = {isa = PBXBuildFile; fileRef = 17F4CBB2147AC3CF9A056ADB /* liquid-metal-border.metal */; };
 		40924A925E7791F79565E07B /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9614692D199CBCB61F94D625 /* MotionManager.swift */; };
+		49D6C701B704B62F470E63F8 /* CollapsingIridescentHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58C509E09177BD114D1B15C8 /* CollapsingIridescentHeader.swift */; };
 		4B0BED9F09A4CAA87F3DD4EB /* holographic-text.metal in Sources */ = {isa = PBXBuildFile; fileRef = 80820E3E6127757CC47B5F8A /* holographic-text.metal */; };
 		4C9148F4CE29D7D33FFEA095 /* FilterChipRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33DE223869D4B4D55BC1F1D /* FilterChipRow.swift */; };
 		67D8824F055CD61731207241 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5EFB07B5DFDD4C92B71A5F /* HapticManager.swift */; };
@@ -112,6 +113,7 @@
 		40E2A2A1E66E475ED1DC1DAE /* HolographicText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HolographicText.swift; sourceTree = "<group>"; };
 		454A976E1D2AE4F7D4A1DC38 /* LiquidMetalFAB.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiquidMetalFAB.swift; sourceTree = "<group>"; };
 		4AAC8EB2D5DDE04763EE32EA /* DayOfWeekPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DayOfWeekPicker.swift; path = DayOfWeekPicker.swift; sourceTree = "<group>"; };
+		58C509E09177BD114D1B15C8 /* CollapsingIridescentHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollapsingIridescentHeader.swift; sourceTree = "<group>"; };
 		5D07C7C1EC005654831191E1 /* ScheduleService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScheduleService.swift; path = ScheduleService.swift; sourceTree = "<group>"; };
 		5F9B5709243254F3F3ABDFF8 /* animated-gradient.metal */ = {isa = PBXFileReference; includeInIndex = 1; path = "animated-gradient.metal"; sourceTree = "<group>"; };
 		64AF6624F55B961267889957 /* TimelineRuler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimelineRuler.swift; sourceTree = "<group>"; };
@@ -415,6 +417,7 @@
 				F212BBC0577CB36AFECE5B7B /* ToastView.swift */,
 				06A7DA5BE5516F0748459EAA /* VolumeExerciseRow.swift */,
 				454A976E1D2AE4F7D4A1DC38 /* LiquidMetalFAB.swift */,
+				58C509E09177BD114D1B15C8 /* CollapsingIridescentHeader.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -576,6 +579,7 @@
 				FEA136D5A46360E2AC5842D7 /* VolumeBreakdownView.swift in Sources */,
 				042432BEAEFE9DDC4C2D9C8D /* LiquidMetalFAB.swift in Sources */,
 				B848178BBA45CFD300494F8C /* CreateExerciseView.swift in Sources */,
+				49D6C701B704B62F470E63F8 /* CollapsingIridescentHeader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -634,7 +638,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -691,7 +695,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

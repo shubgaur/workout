@@ -11,6 +11,7 @@ struct ProgramListView: View {
     @State private var programToPause: Program?
     @State private var showingDeleteConfirmation = false
     @State private var programToDelete: Program?
+    @State private var headerState = CollapsingHeaderState()
 
     var body: some View {
         NavigationStack {
@@ -31,14 +32,11 @@ struct ProgramListView: View {
                 .padding(.bottom, RepsTheme.Spacing.tabBarSafeArea)
             }
             .transparentNavigation()
-            .safeAreaInset(edge: .top) {
-                HStack {
-                    GradientTitle(text: "Programs")
-                    Spacer()
-                }
-                .padding(.horizontal, RepsTheme.Spacing.md)
-                .padding(.top, RepsTheme.Spacing.xl)
-                .padding(.bottom, RepsTheme.Spacing.sm)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                CollapsingIridescentHeader(
+                    title: "Programs",
+                    isVisible: headerState.isVisibleBinding
+                )
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingCreateProgram) {
@@ -157,6 +155,11 @@ struct ProgramListView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear)
+        .onScrollGeometryChange(for: CGFloat.self) { geo in
+            geo.contentOffset.y + geo.contentInsets.top
+        } action: { old, new in
+            headerState.handleScroll(oldOffset: old, newOffset: new)
+        }
     }
 
     private func duplicateProgram(_ program: Program) {
@@ -210,12 +213,12 @@ struct ProgramRow: View {
                         if program.isPaused {
                             Text("PAUSED")
                                 .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(RepsTheme.Colors.accent)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(
                                     RoundedRectangle(cornerRadius: 4)
-                                        .fill(Color.orange.opacity(0.2))
+                                        .fill(RepsTheme.Colors.accent.opacity(0.2))
                                 )
                         } else {
                             Text("ACTIVE")

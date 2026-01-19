@@ -25,7 +25,7 @@ struct StreakBadge: View {
     private var streakColor: Color {
         switch streak {
         case 0..<7:
-            return .orange
+            return RepsTheme.Colors.accent
         case 7..<30:
             return .red
         default:

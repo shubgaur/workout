@@ -282,7 +282,7 @@ struct ConfettiPiece: Identifiable {
             .blue,
             .purple
         ]
-        color = colors.randomElement() ?? .orange
+        color = colors.randomElement() ?? RepsTheme.Colors.accent
         startX = CGFloat.random(in: 0...UIScreen.main.bounds.width)
         rotation = Double.random(in: 0...360)
         scale = CGFloat.random(in: 0.5...1.0)

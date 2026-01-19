@@ -61,7 +61,7 @@ struct LiquidMetalBorder: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
-                        colors: [Color.orange.opacity(0.6), Color.orange],
+                        colors: [RepsTheme.Colors.accent.opacity(0.6), RepsTheme.Colors.accent],
                         startPoint: .bottom,
                         endPoint: .top
                     )
