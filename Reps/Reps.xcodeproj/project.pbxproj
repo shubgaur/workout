@@ -66,6 +66,12 @@
 		E80000012D4A000000000024 /* RepsTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000024 /* RepsTheme.swift */; };
 		E80000012D4A000000000025 /* ExerciseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000025 /* ExerciseService.swift */; };
 		E80000012D4A000000000026 /* exercises.json in Resources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000026 /* exercises.json */; };
+		E80000012D4A000000000027 /* Videos in Resources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000027 /* Videos */; };
+		E80000012D4A000000000028 /* bbr-program.json in Resources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000028 /* bbr-program.json */; };
+		E80000012D4A00000000002A /* ProgramEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A00000000002A /* ProgramEditSheet.swift */; };
+		E80000012D4A00000000002B /* WorkoutEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A00000000002B /* WorkoutEditSheet.swift */; };
+		E80000012D4A00000000002C /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A00000000002C /* OnboardingView.swift */; };
+		E80000012D4A00000000002D /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A00000000002D /* HelpView.swift */; };
 		E80000012D4A000000000030 /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000030 /* ExerciseLibraryView.swift */; };
 		E80000012D4A000000000031 /* ExerciseCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000031 /* ExerciseCell.swift */; };
 		E80000012D4A000000000032 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80000002D4A000000000032 /* ExerciseDetailView.swift */; };
@@ -155,6 +161,12 @@
 		E80000002D4A000000000024 /* RepsTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepsTheme.swift; sourceTree = "<group>"; };
 		E80000002D4A000000000025 /* ExerciseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseService.swift; sourceTree = "<group>"; };
 		E80000002D4A000000000026 /* exercises.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = exercises.json; sourceTree = "<group>"; };
+		E80000002D4A000000000027 /* Videos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Videos; sourceTree = "<group>"; };
+		E80000002D4A000000000028 /* bbr-program.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bbr-program.json"; sourceTree = "<group>"; };
+		E80000002D4A00000000002A /* ProgramEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramEditSheet.swift; sourceTree = "<group>"; };
+		E80000002D4A00000000002B /* WorkoutEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditSheet.swift; sourceTree = "<group>"; };
+		E80000002D4A00000000002C /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		E80000002D4A00000000002D /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		E80000002D4A000000000030 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
 		E80000002D4A000000000031 /* ExerciseCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseCell.swift; sourceTree = "<group>"; };
 		E80000002D4A000000000032 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
@@ -295,6 +307,8 @@
 			isa = PBXGroup;
 			children = (
 				E80000002D4A000000000026 /* exercises.json */,
+				E80000002D4A000000000027 /* Videos */,
+				E80000002D4A000000000028 /* bbr-program.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -308,6 +322,7 @@
 				E80000002D4A00000000010A /* Workout */,
 				E80000002D4A00000000010B /* History */,
 				E80000002D4A00000000010C /* Profile */,
+				E80000002D4A00000000010F /* Onboarding */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -337,6 +352,7 @@
 				ABAC2FF752AFD789FCF5C2D9 /* ProgramActivationSheet.swift */,
 				78F25276DC3FB840E3FC0BAF /* SkipDelaySheet.swift */,
 				DC1F38DE68616453C5007404 /* PauseProgramSheet.swift */,
+				E80000002D4A00000000002A /* ProgramEditSheet.swift */,
 			);
 			path = Programs;
 			sourceTree = "<group>";
@@ -360,6 +376,7 @@
 				E80000002D4A000000000061 /* WorkoutDetailView.swift */,
 				E80000002D4A000000000062 /* ProgressChartView.swift */,
 				E80000002D4A000000000063 /* PersonalRecordsView.swift */,
+				E80000002D4A00000000002B /* WorkoutEditSheet.swift */,
 			);
 			path = History;
 			sourceTree = "<group>";
@@ -373,8 +390,17 @@
 				8E3786097E6899928D9EF025 /* PRHistoryTimelineView.swift */,
 				68066B622540D74BE547BF3E /* ThemeSettingsView.swift */,
 				C2C788132B41B01D70EE814C /* VolumeBreakdownView.swift */,
+				E80000002D4A00000000002D /* HelpView.swift */,
 			);
 			path = Profile;
+			sourceTree = "<group>";
+		};
+		E80000002D4A00000000010F /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				E80000002D4A00000000002C /* OnboardingView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		E80000002D4A00000000010D /* Utils */ = {
@@ -482,6 +508,8 @@
 			files = (
 				E80000012D4A000000000003 /* Assets.xcassets in Resources */,
 				E80000012D4A000000000026 /* exercises.json in Resources */,
+				E80000012D4A000000000027 /* Videos in Resources */,
+				E80000012D4A000000000028 /* bbr-program.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,6 +550,10 @@
 				E80000012D4A000000000046 /* ImportProgramView.swift in Sources */,
 				E80000012D4A000000000047 /* ImportService.swift in Sources */,
 				E80000012D4A000000000048 /* ImportView.swift in Sources */,
+				E80000012D4A00000000002A /* ProgramEditSheet.swift in Sources */,
+				E80000012D4A00000000002B /* WorkoutEditSheet.swift in Sources */,
+				E80000012D4A00000000002C /* OnboardingView.swift in Sources */,
+				E80000012D4A00000000002D /* HelpView.swift in Sources */,
 				E80000012D4A000000000082 /* VideoStorageService.swift in Sources */,
 				E80000012D4A000000000050 /* ActiveWorkoutView.swift in Sources */,
 				E80000012D4A000000000051 /* ExerciseCard.swift in Sources */,

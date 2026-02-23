@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var scrubProgress: CGFloat? = nil
     @State private var activeWorkoutSession: WorkoutSession?
     @State private var dragOffset: CGFloat = 0
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -58,6 +59,12 @@ struct ContentView: View {
                 activeWorkoutSession = nil
             }
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { !hasSeenOnboarding },
+            set: { if !$0 { hasSeenOnboarding = true } }
+        )) {
+            OnboardingView()
+        }
     }
 
     @ViewBuilder
@@ -78,6 +85,13 @@ struct ContentView: View {
 
     private func startWorkout(template: WorkoutTemplate?, programDay: ProgramDay?) {
         let session = WorkoutSession(template: template, programDay: programDay)
+        // Set default name from program context
+        if let day = programDay,
+           let week = day.week,
+           let phase = week.phase,
+           let program = phase.program {
+            session.name = "\(program.name) · W\(week.weekNumber)D\(day.dayNumber)"
+        }
         modelContext.insert(session)
 
         // Copy exercise groups from template if available
@@ -107,7 +121,13 @@ struct ContentView: View {
                             setNumber: setTemplate.setNumber,
                             setType: setTemplate.setType
                         )
-                        // TODO: Populate previousReps/previousWeight from history
+                        if let targetTime = setTemplate.targetTime {
+                            loggedSet.time = targetTime
+                        }
+                        if let targetReps = setTemplate.targetReps {
+                            loggedSet.reps = targetReps
+                        }
+                        loggedSet.side = setTemplate.side
                         loggedSet.workoutExercise = sessionExercise
                         sessionExercise.loggedSets.append(loggedSet)
                     }
@@ -203,20 +223,21 @@ struct TodayWorkoutCard: View {
 
     var onStartWorkout: ((WorkoutTemplate?, ProgramDay?) -> Void)?
 
-    private var activeProgram: Program? { activePrograms.first }
     private var stats: UserStats? { userStats.first }
 
     var body: some View {
-        if let program = activeProgram {
-            if program.isPaused {
-                PausedProgramCard(program: program)
-            } else if ScheduleService.isScheduledToday(program) {
-                ScheduledWorkoutCard(program: program, stats: stats, onStartWorkout: onStartWorkout)
-            } else {
-                NextWorkoutCard(program: program)
-            }
-        } else {
+        if activePrograms.isEmpty {
             NoProgramCard()
+        } else {
+            ForEach(activePrograms) { program in
+                if program.isPaused {
+                    PausedProgramCard(program: program)
+                } else if ScheduleService.isScheduledToday(program) {
+                    ScheduledWorkoutCard(program: program, stats: stats, onStartWorkout: onStartWorkout)
+                } else {
+                    NextWorkoutCard(program: program)
+                }
+            }
         }
     }
 }

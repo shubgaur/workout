@@ -3,6 +3,23 @@ import SwiftData
 import AVKit
 import UniformTypeIdentifiers
 import ImageIO
+import SafariServices
+import PhotosUI
+
+// MARK: - Safari View (in-app browser for YouTube)
+
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        let vc = SFSafariViewController(url: url)
+        vc.preferredBarTintColor = UIColor(RepsTheme.Colors.background)
+        vc.preferredControlTintColor = UIColor(RepsTheme.Colors.accent)
+        return vc
+    }
+
+    func updateUIViewController(_ vc: SFSafariViewController, context: Context) {}
+}
 
 // MARK: - Scale Button Style
 
@@ -173,10 +190,10 @@ struct ExerciseDetailView: View {
     }
 
     private var videoCardSubtitle: String {
-        if exercise.localVideoFilename != nil {
-            return "Local video • Tap to play"
-        } else if exercise.videoURL != nil {
+        if exercise.effectiveVideoURL != nil {
             return "Tap to play exercise tutorial"
+        } else if exercise.videoURL != nil {
+            return "Video URL set • Tap to view"
         } else {
             return "Tap to add a video URL or file"
         }
@@ -195,8 +212,12 @@ struct ExerciseDetailView: View {
             )
 
             VStack(spacing: RepsTheme.Spacing.md) {
-                // Image or placeholder
-                if let imageURL = exercise.imageURL, let url = URL(string: imageURL) {
+                if let videoURL = exercise.effectiveVideoURL {
+                    // Inline video player (local or bundled) - autoplay, muted, loops
+                    InlineVideoPlayer(url: videoURL)
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+                } else if let imageURL = exercise.imageURL, let url = URL(string: imageURL) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .success(let image):
@@ -218,10 +239,25 @@ struct ExerciseDetailView: View {
         .sheet(isPresented: $showingVideo) {
             VideoPlayerSheet(
                 videoURL: exercise.videoURL,
-                localVideoURL: exercise.localVideoURL,
+                localVideoURL: exercise.effectiveVideoURL ?? exercise.localVideoURL,
                 exerciseName: exercise.name
             )
         }
+    }
+
+    private func isYouTubeURL(_ url: String) -> Bool {
+        url.contains("youtube.com") || url.contains("youtu.be")
+    }
+
+    private func extractVideoID(from url: String) -> String? {
+        if url.contains("youtu.be/") {
+            return url.components(separatedBy: "youtu.be/").last?.components(separatedBy: "?").first
+        } else if url.contains("youtube.com/watch") {
+            return URLComponents(string: url)?.queryItems?.first(where: { $0.name == "v" })?.value
+        } else if url.contains("youtube.com/embed/") {
+            return url.components(separatedBy: "embed/").last?.components(separatedBy: "?").first
+        }
+        return nil
     }
 
     private var exercisePlaceholder: some View {
@@ -394,8 +430,9 @@ struct VideoPlayerSheet: View {
                     }
 
                 case .youTube:
-                    if let urlString = videoURL {
-                        YouTubePlayerView(videoURL: urlString, autoplay: true)
+                    if let urlString = videoURL, let url = URL(string: urlString) {
+                        SafariView(url: url)
+                            .ignoresSafeArea()
                     }
 
                 case .directVideo:
@@ -485,6 +522,375 @@ struct LocalVideoPlayerView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {}
 }
 
+// MARK: - Inline Video Player (muted, looping, autoplay with scrubber + fullscreen)
+
+struct InlineVideoPlayer: View {
+    let url: URL
+
+    @State private var player: AVPlayer?
+    @State private var isPlaying = true
+    @State private var isMuted = true
+    @State private var progress: Double = 0
+    @State private var duration: Double = 0
+    @State private var isScrubbing = false
+    @State private var wasPlayingBeforeScrub = true
+    @State private var showingFullscreen = false
+    @State private var showControls = true
+    @State private var hideControlsTask: Task<Void, Never>?
+    @State private var timeObserver: Any?
+    @State private var scrubThrottleTask: Task<Void, Never>?
+
+    var body: some View {
+        ZStack {
+            // Video layer
+            InlineAVPlayerView(player: player, videoGravity: .resizeAspectFill)
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showControls.toggle()
+                    }
+                    if showControls { scheduleHideControls() }
+                }
+
+            // Controls overlay
+            if showControls {
+                controlsOverlay
+                    .transition(.opacity)
+            }
+        }
+        .onAppear { setupPlayer() }
+        .onDisappear { teardownPlayer() }
+        .fullScreenCover(isPresented: $showingFullscreen) {
+            FullscreenVideoPlayer(url: url, startTime: progress, isMuted: isMuted)
+        }
+    }
+
+    // MARK: - Controls Overlay
+
+    private var controlsOverlay: some View {
+        VStack {
+            // Top bar: mute + fullscreen
+            HStack {
+                Spacer()
+
+                Button {
+                    isMuted.toggle()
+                    player?.isMuted = isMuted
+                    scheduleHideControls()
+                } label: {
+                    Image(systemName: isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(8)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+
+                Button {
+                    player?.pause()
+                    showingFullscreen = true
+                } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(8)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.top, 8)
+
+            Spacer()
+
+            // Center: skip buttons
+            HStack(spacing: 32) {
+                Button { skip(by: -5) } label: {
+                    Image(systemName: "gobackward.5")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+
+                Button {
+                    togglePlayback()
+                } label: {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(14)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+
+                Button { skip(by: 5) } label: {
+                    Image(systemName: "goforward.5")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+            }
+
+            Spacer()
+
+            // Bottom bar: scrubber + time
+            HStack(spacing: 8) {
+                // Current time
+                Text(formatTime(progress))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .frame(width: 34, alignment: .leading)
+
+                // Scrubber
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        // Track
+                        Capsule()
+                            .fill(.white.opacity(0.3))
+                            .frame(height: isScrubbing ? 6 : 4)
+
+                        // Progress
+                        Capsule()
+                            .fill(RepsTheme.Colors.accent)
+                            .frame(width: max(0, geo.size.width * scrubFraction), height: isScrubbing ? 6 : 4)
+
+                        // Thumb
+                        Circle()
+                            .fill(RepsTheme.Colors.accent)
+                            .frame(width: isScrubbing ? 18 : 14, height: isScrubbing ? 18 : 14)
+                            .offset(x: max(0, geo.size.width * scrubFraction - (isScrubbing ? 9 : 7)))
+                            .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+                    }
+                    .frame(height: 18)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                if !isScrubbing {
+                                    // Start scrubbing: pause playback for responsive frame display
+                                    wasPlayingBeforeScrub = isPlaying
+                                    player?.pause()
+                                    isScrubbing = true
+                                    hideControlsTask?.cancel()
+                                }
+                                let fraction = min(max(value.location.x / geo.size.width, 0), 1)
+                                progress = fraction * duration
+                                // Seek live as user drags for frame-by-frame scrubbing
+                                seekLive(to: progress)
+                            }
+                            .onEnded { _ in
+                                scrubThrottleTask?.cancel()
+                                let time = CMTime(seconds: progress, preferredTimescale: 600)
+                                player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+                                withAnimation(.easeOut(duration: 0.15)) {
+                                    isScrubbing = false
+                                }
+                                if wasPlayingBeforeScrub {
+                                    player?.play()
+                                    isPlaying = true
+                                }
+                                scheduleHideControls()
+                            }
+                    )
+                    .animation(.easeOut(duration: 0.1), value: isScrubbing)
+                }
+                .frame(height: 18)
+
+                // Duration
+                Text(formatTime(duration))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .frame(width: 34, alignment: .trailing)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                LinearGradient(colors: [.clear, .black.opacity(0.5)], startPoint: .top, endPoint: .bottom)
+            )
+        }
+    }
+
+    private var scrubFraction: CGFloat {
+        duration > 0 ? progress / duration : 0
+    }
+
+    // MARK: - Player Setup
+
+    private func setupPlayer() {
+        let avPlayer = AVPlayer(url: url)
+        avPlayer.isMuted = true
+        self.player = avPlayer
+
+        // Observe time
+        let interval = CMTime(seconds: 0.1, preferredTimescale: 600)
+        timeObserver = avPlayer.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
+            guard !isScrubbing else { return }
+            progress = time.seconds
+            if let item = avPlayer.currentItem {
+                let dur = item.duration.seconds
+                if dur.isFinite { duration = dur }
+            }
+        }
+
+        // Loop
+        NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: avPlayer.currentItem,
+            queue: .main
+        ) { _ in
+            avPlayer.seek(to: .zero)
+            avPlayer.play()
+        }
+
+        avPlayer.play()
+        scheduleHideControls()
+    }
+
+    private func teardownPlayer() {
+        hideControlsTask?.cancel()
+        scrubThrottleTask?.cancel()
+        if let observer = timeObserver {
+            player?.removeTimeObserver(observer)
+        }
+        player?.pause()
+        player = nil
+    }
+
+    private func togglePlayback() {
+        if isPlaying {
+            player?.pause()
+        } else {
+            player?.play()
+        }
+        isPlaying.toggle()
+        scheduleHideControls()
+    }
+
+    private func skip(by seconds: Double) {
+        guard let player else { return }
+        let target = min(max(progress + seconds, 0), duration)
+        progress = target
+        let time = CMTime(seconds: target, preferredTimescale: 600)
+        player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+        scheduleHideControls()
+    }
+
+    /// Seek while scrubbing - throttled to avoid overwhelming the decoder
+    private func seekLive(to seconds: Double) {
+        scrubThrottleTask?.cancel()
+        scrubThrottleTask = Task {
+            let time = CMTime(seconds: seconds, preferredTimescale: 600)
+            await player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+        }
+    }
+
+    private func scheduleHideControls() {
+        hideControlsTask?.cancel()
+        hideControlsTask = Task {
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showControls = false
+                }
+            }
+        }
+    }
+
+    private func formatTime(_ seconds: Double) -> String {
+        guard seconds.isFinite else { return "0:00" }
+        let mins = Int(seconds) / 60
+        let secs = Int(seconds) % 60
+        return "\(mins):\(String(format: "%02d", secs))"
+    }
+}
+
+// MARK: - AVPlayer UIKit Wrapper (no system controls)
+
+struct InlineAVPlayerView: UIViewControllerRepresentable {
+    let player: AVPlayer?
+    var videoGravity: AVLayerVideoGravity = .resizeAspectFill
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let controller = AVPlayerViewController()
+        controller.player = player
+        controller.showsPlaybackControls = false
+        controller.videoGravity = videoGravity
+        controller.view.backgroundColor = .clear
+        return controller
+    }
+
+    func updateUIViewController(_ controller: AVPlayerViewController, context: Context) {
+        controller.player = player
+    }
+}
+
+// MARK: - Fullscreen Video Player
+
+struct FullscreenVideoPlayer: View {
+    let url: URL
+    var startTime: Double = 0
+    var isMuted: Bool = true
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var player: AVPlayer?
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            if let player {
+                VideoPlayer(player: player)
+                    .ignoresSafeArea()
+            }
+
+            // Close button
+            VStack {
+                HStack {
+                    Button {
+                        player?.pause()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                    .padding(.leading, 16)
+                    .padding(.top, 8)
+
+                    Spacer()
+                }
+                Spacer()
+            }
+        }
+        .onAppear {
+            let avPlayer = AVPlayer(url: url)
+            avPlayer.isMuted = isMuted
+            if startTime > 0 {
+                avPlayer.seek(to: CMTime(seconds: startTime, preferredTimescale: 600))
+            }
+
+            // Loop
+            NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: avPlayer.currentItem,
+                queue: .main
+            ) { _ in
+                avPlayer.seek(to: .zero)
+                avPlayer.play()
+            }
+
+            avPlayer.play()
+            self.player = avPlayer
+        }
+        .onDisappear {
+            player?.pause()
+            player = nil
+        }
+        .preferredColorScheme(.dark)
+    }
+}
+
 // MARK: - YouTube Player View
 
 import WebKit
@@ -519,12 +925,12 @@ struct YouTubePlayerView: UIViewRepresentable {
             </style>
         </head>
         <body>
-            <iframe src="https://www.youtube.com/embed/\(videoID)?playsinline=1&rel=0\(autoplayParam)" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/\(videoID)?playsinline=1&rel=0\(autoplayParam)" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </body>
         </html>
         """
 
-        webView.loadHTMLString(embedHTML, baseURL: nil)
+        webView.loadHTMLString(embedHTML, baseURL: URL(string: "https://www.youtube.com"))
     }
 
     private func extractVideoID(from url: String) -> String? {
@@ -723,6 +1129,7 @@ struct VideoURLInputSheet: View {
     @State private var showingFilePicker = false
     @State private var isImporting = false
     @State private var errorMessage: String?
+    @State private var selectedVideoItem: PhotosPickerItem?
 
     var body: some View {
         NavigationStack {
@@ -738,7 +1145,7 @@ struct VideoURLInputSheet: View {
                         .font(RepsTheme.Typography.title)
                         .foregroundStyle(RepsTheme.Colors.text)
 
-                    Text("Add a YouTube URL or import a local video file")
+                    Text("Add a URL, import from Files, or choose from Photo Library")
                         .font(RepsTheme.Typography.caption)
                         .foregroundStyle(RepsTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
@@ -818,6 +1225,51 @@ struct VideoURLInputSheet: View {
                         )
                     }
                     .buttonStyle(ScaleButtonStyle())
+
+                    // Photo library picker button
+                    PhotosPicker(selection: $selectedVideoItem, matching: .videos) {
+                        HStack(spacing: RepsTheme.Spacing.sm) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 18))
+                            Text("Choose from Photo Library")
+                                .font(RepsTheme.Typography.body)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundStyle(RepsTheme.Colors.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, RepsTheme.Spacing.md)
+                        .background(RepsTheme.Colors.surfaceElevated)
+                        .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: RepsTheme.Radius.md)
+                                .stroke(RepsTheme.Colors.accent.opacity(0.5), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .onChange(of: selectedVideoItem) { _, item in
+                        guard let item else { return }
+                        isImporting = true
+                        errorMessage = nil
+                        Task {
+                            do {
+                                guard let data = try await item.loadTransferable(type: Data.self) else {
+                                    throw NSError(domain: "VideoImport", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not load video data"])
+                                }
+                                let filename = UUID().uuidString + ".mp4"
+                                let url = VideoStorageService.videosDirectory.appendingPathComponent(filename)
+                                try data.write(to: url)
+                                exercise.videoURL = nil
+                                exercise.localVideoFilename = filename
+                                isImporting = false
+                                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                                dismiss()
+                            } catch {
+                                isImporting = false
+                                errorMessage = "Failed to import video: \(error.localizedDescription)"
+                                UINotificationFeedbackGenerator().notificationOccurred(.error)
+                            }
+                        }
+                    }
 
                     // Error message
                     if let error = errorMessage {
@@ -1253,12 +1705,144 @@ struct MarkdownText: View {
     }
 
     var body: some View {
-        if let attributedString = try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
-            Text(attributedString)
-                .lineSpacing(4)
-        } else {
+        VStack(alignment: .leading, spacing: RepsTheme.Spacing.sm) {
+            ForEach(Array(parseBlocks().enumerated()), id: \.offset) { _, block in
+                blockView(block)
+            }
+        }
+    }
+
+    private enum MarkdownBlock {
+        case heading(String)
+        case bullet(String)
+        case numberedItem(number: Int, text: String)
+        case link(url: String)
+        case paragraph(String)
+    }
+
+    private func parseBlocks() -> [MarkdownBlock] {
+        var blocks: [MarkdownBlock] = []
+        let lines = text.components(separatedBy: "\n")
+
+        var currentParagraph = ""
+
+        func flushParagraph() {
+            let trimmed = currentParagraph.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                blocks.append(.paragraph(trimmed))
+            }
+            currentParagraph = ""
+        }
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+
+            if trimmed.isEmpty {
+                flushParagraph()
+            } else if trimmed.hasPrefix("## ") {
+                flushParagraph()
+                let heading = String(trimmed.dropFirst(3)).trimmingCharacters(in: .whitespaces)
+                blocks.append(.heading(heading))
+            } else if trimmed.hasPrefix("# ") {
+                flushParagraph()
+                let heading = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                blocks.append(.heading(heading))
+            } else if trimmed.hasPrefix("- ") {
+                flushParagraph()
+                let item = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                blocks.append(.bullet(item))
+            } else if let dotIndex = trimmed.firstIndex(of: "."),
+                      dotIndex > trimmed.startIndex,
+                      let num = Int(trimmed[trimmed.startIndex..<dotIndex]),
+                      trimmed.index(after: dotIndex) < trimmed.endIndex,
+                      trimmed[trimmed.index(after: dotIndex)] == " " {
+                flushParagraph()
+                let textStart = trimmed.index(dotIndex, offsetBy: 2)
+                let itemText = String(trimmed[textStart...]).trimmingCharacters(in: .whitespaces)
+                blocks.append(.numberedItem(number: num, text: itemText))
+            } else if trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") {
+                flushParagraph()
+                blocks.append(.link(url: trimmed))
+            } else {
+                if !currentParagraph.isEmpty {
+                    currentParagraph += " "
+                }
+                currentParagraph += trimmed
+            }
+        }
+        flushParagraph()
+
+        return blocks
+    }
+
+    @ViewBuilder
+    private func blockView(_ block: MarkdownBlock) -> some View {
+        switch block {
+        case .heading(let text):
             Text(text)
-                .lineSpacing(4)
+                .font(RepsTheme.Typography.headline)
+                .foregroundStyle(RepsTheme.Colors.accent)
+                .padding(.top, RepsTheme.Spacing.xs)
+
+        case .bullet(let text):
+            HStack(alignment: .top, spacing: RepsTheme.Spacing.xs) {
+                Text("•")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                if let attributed = try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                    Text(attributed)
+                        .foregroundStyle(RepsTheme.Colors.textSecondary)
+                } else {
+                    Text(text)
+                        .foregroundStyle(RepsTheme.Colors.textSecondary)
+                }
+            }
+
+        case .numberedItem(let number, let text):
+            HStack(alignment: .top, spacing: RepsTheme.Spacing.xs) {
+                Text("\(number).")
+                    .font(RepsTheme.Typography.body)
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    .frame(width: 24, alignment: .trailing)
+                if let attributed = try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                    Text(attributed)
+                        .foregroundStyle(RepsTheme.Colors.textSecondary)
+                } else {
+                    Text(text)
+                        .foregroundStyle(RepsTheme.Colors.textSecondary)
+                }
+            }
+
+        case .link(let url):
+            if let linkURL = URL(string: url) {
+                Link(destination: linkURL) {
+                    HStack(spacing: RepsTheme.Spacing.xs) {
+                        Image(systemName: url.contains("youtu") ? "play.rectangle.fill" : "link")
+                            .foregroundStyle(RepsTheme.Colors.accent)
+                        Text(url.contains("youtu") ? "Watch Video" : url)
+                            .font(RepsTheme.Typography.caption)
+                            .foregroundStyle(RepsTheme.Colors.accent)
+                            .lineLimit(1)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 10))
+                            .foregroundStyle(RepsTheme.Colors.textTertiary)
+                    }
+                    .padding(RepsTheme.Spacing.sm)
+                    .background(RepsTheme.Colors.accent.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+                }
+            }
+
+        case .paragraph(let text):
+            if let attributed = try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                Text(attributed)
+                    .lineSpacing(4)
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+            } else {
+                Text(text)
+                    .lineSpacing(4)
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+            }
         }
     }
 }

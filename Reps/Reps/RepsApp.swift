@@ -62,6 +62,8 @@ struct RepsApp: App {
             try await sampleDataService.seedSampleData()
             // Seed sample program for testing Programs tab
             try await sampleDataService.seedSampleProgram()
+            // Seed Beginner Body Restoration corrective exercise program
+            try await sampleDataService.seedBeginnerBodyRestoration()
         } catch {
             print("Failed to seed data: \(error)")
         }

@@ -138,6 +138,20 @@ enum RecordType: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Set Side (for per-side exercises)
+
+enum SetSide: String, Codable, CaseIterable {
+    case left
+    case right
+
+    var displayName: String {
+        switch self {
+        case .left: return "L"
+        case .right: return "R"
+        }
+    }
+}
+
 // MARK: - Units
 
 enum WeightUnit: String, Codable, CaseIterable {

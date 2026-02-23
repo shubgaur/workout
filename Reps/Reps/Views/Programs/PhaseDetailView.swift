@@ -1,22 +1,56 @@
 import SwiftUI
 import SwiftData
+import SafariServices
 
 struct PhaseDetailView: View {
     @Bindable var phase: Phase
     @Environment(\.modelContext) private var modelContext
+    @State private var showingPlaylist = false
+    @State private var playlistURL: URL?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: RepsTheme.Spacing.lg) {
                 // Header
                 if let description = phase.phaseDescription, !description.isEmpty {
-                    Text(description)
-                        .font(RepsTheme.Typography.body)
-                        .foregroundStyle(RepsTheme.Colors.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(RepsTheme.Spacing.md)
-                        .background(RepsTheme.Colors.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+                    let parsed = parseDescription(description)
+
+                    if !parsed.text.isEmpty {
+                        Text(parsed.text)
+                            .font(RepsTheme.Typography.body)
+                            .foregroundStyle(RepsTheme.Colors.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(RepsTheme.Spacing.md)
+                            .background(RepsTheme.Colors.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+                    }
+
+                    // Playlist button
+                    if let url = parsed.playlistURL {
+                        Button {
+                            playlistURL = url
+                            showingPlaylist = true
+                        } label: {
+                            HStack(spacing: RepsTheme.Spacing.sm) {
+                                Image(systemName: "play.rectangle.fill")
+                                    .font(.system(size: 20))
+                                Text("Watch Phase Playlist")
+                                    .font(RepsTheme.Typography.subheadline.weight(.semibold))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12))
+                            }
+                            .foregroundStyle(RepsTheme.Colors.accent)
+                            .padding(RepsTheme.Spacing.md)
+                            .background(RepsTheme.Colors.accent.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: RepsTheme.Radius.md)
+                                    .stroke(RepsTheme.Colors.accent.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
 
                 // Weeks
@@ -41,6 +75,23 @@ struct PhaseDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingPlaylist) {
+            if let url = playlistURL {
+                SafariView(url: url)
+                    .ignoresSafeArea()
+            }
+        }
+    }
+
+    private func parseDescription(_ description: String) -> (text: String, playlistURL: URL?) {
+        if let range = description.range(of: "Playlist: ") {
+            let text = String(description[description.startIndex..<range.lowerBound])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let urlStr = String(description[range.upperBound...])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return (text, URL(string: urlStr))
+        }
+        return (description, nil)
     }
 
     private var weeksSection: some View {

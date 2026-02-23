@@ -33,11 +33,32 @@ final class WorkoutExercise {
     }
 
     var sortedSetTemplates: [SetTemplate] {
-        setTemplates.sorted { $0.setNumber < $1.setNumber }
+        setTemplates.sorted {
+            if $0.setNumber != $1.setNumber { return $0.setNumber < $1.setNumber }
+            // Left before right, nil last
+            let sideOrder: (SetSide?) -> Int = { side in
+                switch side {
+                case .left: return 0
+                case .right: return 1
+                case nil: return 2
+                }
+            }
+            return sideOrder($0.side) < sideOrder($1.side)
+        }
     }
 
     var sortedLoggedSets: [LoggedSet] {
-        loggedSets.sorted { $0.setNumber < $1.setNumber }
+        loggedSets.sorted {
+            if $0.setNumber != $1.setNumber { return $0.setNumber < $1.setNumber }
+            let sideOrder: (SetSide?) -> Int = { side in
+                switch side {
+                case .left: return 0
+                case .right: return 1
+                case nil: return 2
+                }
+            }
+            return sideOrder($0.side) < sideOrder($1.side)
+        }
     }
 
     var completedSets: Int {

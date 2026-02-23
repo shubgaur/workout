@@ -21,6 +21,7 @@ struct ImportableExercise: Codable {
 struct ProgramDTO: Codable {
     let name: String
     let description: String?
+    let programDetails: String?
     let phases: [PhaseDTO]
 }
 
@@ -58,6 +59,7 @@ struct WorkoutExerciseDTO: Codable {
     let exerciseRef: String
     let notes: String?
     let restSeconds: Int?
+    let isOptional: Bool?
     let sets: [SetDTO]
 }
 
@@ -68,6 +70,8 @@ struct SetDTO: Codable {
     let targetWeight: Double?
     let targetTime: Int?
     let targetRPE: Int?
+    let side: String?
+    let notes: String?
 }
 
 // MARK: - Import Service
@@ -153,10 +157,11 @@ final class ImportService {
         return try await createProgram(from: dto)
     }
 
-    private func createProgram(from dto: ProgramDTO) async throws -> Program {
+    func createProgram(from dto: ProgramDTO) async throws -> Program {
         let program = Program(
             name: dto.name,
-            programDescription: dto.description
+            programDescription: dto.description,
+            programDetails: dto.programDetails
         )
         modelContext.insert(program)
 
@@ -170,7 +175,7 @@ final class ImportService {
         return program
     }
 
-    private func createPhase(from dto: PhaseDTO, order: Int) async throws -> Phase {
+    func createPhase(from dto: PhaseDTO, order: Int) async throws -> Phase {
         let phase = Phase(
             name: dto.name,
             order: order,
@@ -186,7 +191,7 @@ final class ImportService {
         return phase
     }
 
-    private func createWeek(from dto: WeekDTO) async throws -> Week {
+    func createWeek(from dto: WeekDTO) async throws -> Week {
         let week = Week(
             weekNumber: dto.weekNumber,
             notes: dto.notes
@@ -201,7 +206,7 @@ final class ImportService {
         return week
     }
 
-    private func createDay(from dto: DayDTO) async throws -> ProgramDay {
+    func createDay(from dto: DayDTO) async throws -> ProgramDay {
         let dayType = dto.dayType.flatMap { DayType(rawValue: $0) } ?? .training
 
         let day = ProgramDay(
@@ -219,7 +224,7 @@ final class ImportService {
         return day
     }
 
-    private func createWorkoutTemplate(from dto: WorkoutDTO, dayName: String?) async throws -> WorkoutTemplate {
+    func createWorkoutTemplate(from dto: WorkoutDTO, dayName: String?) async throws -> WorkoutTemplate {
         let template = WorkoutTemplate(
             name: dto.name ?? dayName ?? "Workout"
         )
@@ -233,7 +238,7 @@ final class ImportService {
         return template
     }
 
-    private func createExerciseGroup(from dto: ExerciseGroupDTO, order: Int) async throws -> ExerciseGroup {
+    func createExerciseGroup(from dto: ExerciseGroupDTO, order: Int) async throws -> ExerciseGroup {
         let groupType = dto.type.flatMap { ExerciseGroupType(rawValue: $0) } ?? .single
 
         let group = ExerciseGroup(
@@ -251,7 +256,7 @@ final class ImportService {
         return group
     }
 
-    private func createWorkoutExercise(from dto: WorkoutExerciseDTO, order: Int) async throws -> WorkoutExercise {
+    func createWorkoutExercise(from dto: WorkoutExerciseDTO, order: Int) async throws -> WorkoutExercise {
         // Find exercise by name (fuzzy match)
         guard let exercise = try exerciseService.findExercise(byName: dto.exerciseRef) else {
             // Create a custom exercise if not found
@@ -265,6 +270,7 @@ final class ImportService {
 
             let workoutExercise = WorkoutExercise(
                 order: order,
+                isOptional: dto.isOptional ?? false,
                 notes: dto.notes,
                 restSeconds: dto.restSeconds ?? 90
             )
@@ -281,6 +287,7 @@ final class ImportService {
 
         let workoutExercise = WorkoutExercise(
             order: order,
+            isOptional: dto.isOptional ?? false,
             notes: dto.notes,
             restSeconds: dto.restSeconds ?? 90
         )
@@ -295,8 +302,9 @@ final class ImportService {
         return workoutExercise
     }
 
-    private func createSetTemplate(from dto: SetDTO) -> SetTemplate {
+    func createSetTemplate(from dto: SetDTO) -> SetTemplate {
         let setType = dto.setType.flatMap { SetType(rawValue: $0) } ?? .working
+        let side = dto.side.flatMap { SetSide(rawValue: $0) }
 
         return SetTemplate(
             setNumber: dto.setNumber,
@@ -304,7 +312,9 @@ final class ImportService {
             targetReps: dto.targetReps,
             targetWeight: dto.targetWeight,
             targetTime: dto.targetTime,
-            targetRPE: dto.targetRPE
+            targetRPE: dto.targetRPE,
+            side: side,
+            notes: dto.notes
         )
     }
 }

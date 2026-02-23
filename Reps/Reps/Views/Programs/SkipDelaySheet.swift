@@ -86,7 +86,7 @@ struct SkipDelaySheet: View {
         case .skipOnly:
             ScheduleService.skipWorkout(program, in: modelContext)
         case .pushSchedule:
-            ScheduleService.pushScheduleBack(program, days: 1)
+            ScheduleService.skipWorkout(program, in: modelContext)
         }
         dismiss()
     }

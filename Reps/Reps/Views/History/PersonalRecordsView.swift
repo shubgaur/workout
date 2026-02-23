@@ -3,8 +3,10 @@ import SwiftData
 
 struct PersonalRecordsView: View {
     @Query(sort: \PersonalRecord.achievedAt, order: .reverse) private var records: [PersonalRecord]
+    @Environment(\.modelContext) private var modelContext
 
     @State private var filterType: RecordType?
+    @State private var recordToDelete: PersonalRecord?
 
     private var groupedRecords: [(title: String, records: [PersonalRecord])] {
         let filtered = filterType == nil ? records : records.filter { $0.recordType == filterType }
@@ -22,6 +24,22 @@ struct PersonalRecordsView: View {
         .navigationTitle("Personal Records")
         .navigationBarTitleDisplayMode(.inline)
         .transparentNavigation()
+        .alert("Delete Record?", isPresented: Binding(
+            get: { recordToDelete != nil },
+            set: { if !$0 { recordToDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) {
+                recordToDelete = nil
+            }
+            Button("Delete", role: .destructive) {
+                if let record = recordToDelete {
+                    modelContext.delete(record)
+                    recordToDelete = nil
+                }
+            }
+        } message: {
+            Text("This will permanently delete this personal record.")
+        }
     }
 
     // MARK: - Empty State
@@ -75,6 +93,13 @@ struct PersonalRecordsView: View {
                         VStack(spacing: RepsTheme.Spacing.xs) {
                             ForEach(group.records) { record in
                                 PRActivityCard(record: record)
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            recordToDelete = record
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
                             }
                         }
                     }

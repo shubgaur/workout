@@ -817,5 +817,140 @@
     "muscleGroups": ["back", "glutes", "fullBody"],
     "equipment": "sled",
     "instructions": "1. Attach rope to sled\n2. Pull hand over hand\n3. Keep back engaged\n4. Pull for distance or time"
+  },
+  {
+    "id": "sidelying-90-90-half-rolling",
+    "name": "Sidelying 90/90 Half-Rolling",
+    "muscleGroups": ["hipFlexors", "glutes"],
+    "equipment": "bodyweight",
+    "instructions": "Allows you to gently create space to move through your hips that will make subsequent exercises more effective.\n\n1. Lie on your side with hips and knees at 90 degrees\n2. Slowly roll your top knee toward the floor while keeping effort low (3/10)\n3. Use slow exhale through mouth during movement\n4. Full inhale through nose at end range\n5. Hold for 1.5-2 minutes per side\n\nDoing it right:\n- Your low back is always relaxed\n- Your shoulders don't rotate forward or backward\n- You don't feel tension anywhere in your lower body",
+    "videoURL": "https://youtu.be/Q8GrKwMG-Ck",
+    "bundledVideoFilename": "sidelying-90-90-half-rolling.mp4"
+  },
+  {
+    "id": "standing-latissimus-stretch",
+    "name": "Standing Latissimus Stretch",
+    "muscleGroups": ["lats", "chest", "shoulders"],
+    "equipment": "bodyweight",
+    "instructions": "Releases commonly tight lats that compress our backs and limit shoulder mobility. Opens up chest and helps improve neutral resting position of shoulder.\n\n1. Stand next to a wall or door frame\n2. Reach overhead and grab the support\n3. Lean away to stretch the lat\n4. Breathe slowly - exhale through mouth, inhale through nose\n5. 8 breaths per side\n\nDoing it right:\n- You feel about a 5/10 stretch\n- You feel your chest & lat open up a bit upon inhalation\n- Your neck is always relaxed",
+    "videoURL": "https://www.youtube.com/watch?v=0vn5MrDXei0",
+    "bundledVideoFilename": "standing-latissimus-stretch.mp4"
+  },
+  {
+    "id": "90-90-hip-lift-ball-hold",
+    "name": "90-90 Hip Lift with Ball Hold",
+    "muscleGroups": ["abdominals", "hamstrings"],
+    "equipment": "bodyweight",
+    "instructions": "Improves ability to control tilt of pelvis with hamstrings and abs. Decompresses the low back.\n\n1. Lie on back with feet on wall, hips and knees at 90 degrees\n2. Place a ball or pillow between your knees\n3. Gently squeeze the ball\n4. Lift hips slightly using hamstrings\n5. Breathe slowly - 8 breaths per side\n\nDoing it right:\n- You feel only hamstrings engage (and maybe a little inner thighs if you squeeze the ball)\n- You don't feel glutes engage\n- Your low back is relaxed during the exercise",
+    "videoURL": "https://www.youtube.com/watch?v=fBViIToMhKA",
+    "bundledVideoFilename": "90-90-hip-lift-with-ball-hold.mp4"
+  },
+  {
+    "id": "sidelying-grounding",
+    "name": "Sidelying Grounding",
+    "muscleGroups": ["hipFlexors", "glutes", "adductors"],
+    "equipment": "bodyweight",
+    "instructions": "Decompresses back of pelvis. Opens up space for internal rotation within hips. Improves ability to 'sense the ground' with our foot and improve our gait cycle.\n\nNote: Feel free to drop the top foot down to the bottom foot (while keeping object between thighs) if it's more comfortable.\n\n1. Lie on your side with a pillow between your thighs\n2. Push your bottom foot gently into the wall\n3. Breathe slowly - 8 breaths per side\n\nDoing it right:\n- Your low back and neck are always relaxed\n- The only muscle you feel is your bottom-side abs and maybe a little tension in glutes as you push into the wall",
+    "videoURL": "https://youtu.be/c-dj-KdT1ao",
+    "bundledVideoFilename": "sidelying-grounding.mp4"
+  },
+  {
+    "id": "introductory-pronation-drill",
+    "name": "Introductory Pronation Drill",
+    "muscleGroups": ["calves", "hipFlexors"],
+    "equipment": "bodyweight",
+    "instructions": "Improves foot's ability to connect with the ground and work with our new hip mobility and movement capabilities. Improves ability to turn away from a given side of our body as we walk or run.\n\n1. Stand with feet hip-width apart\n2. Slowly shift weight to allow foot arch to lower toward ground\n3. Move knee forward over toes\n4. 15-20 slow reps per side\n\nDoing it right:\n- You feel like your foot arch is (slightly to moderately) lowering closer towards the ground as your knee moves forward, but you don't lose contact of your heel, base of big toe, or base of little toe\n- Your foot remains relaxed throughout the movement\n- You feel zero tension in your front knee (if you do, stay more upright or put more weight on the working foot)",
+    "videoURL": "https://www.youtube.com/watch?v=u8ICj_n4VNc",
+    "bundledVideoFilename": "introductory-pronation-drill.mp4"
+  },
+  {
+    "id": "supine-chest-opener",
+    "name": "Supine Chest Opener",
+    "muscleGroups": ["chest", "abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "Puts body in a position that biases opening of the front ribs to help improve things like rounded shoulders & forward head posture. Shuts off overactive necks.\n\n1. Lie on your back with a foam roller or pillow under upper back\n2. Arms relaxed to sides\n3. Breathe slowly - 5-8 breaths\n4. Focus on chest expansion on inhale\n\nDoing it right:\n- Your neck is 100% disengaged at all times\n- You feel your chest expand upon inhalation without needing to 'force' it to expand there - it should naturally happen\n- You feel your side abs remain a bit engaged as you inhale",
+    "videoURL": "https://youtu.be/y2rp2sQu1-8",
+    "bundledVideoFilename": "supine-chest-opener.mp4"
+  },
+  {
+    "id": "sidelying-adductor-pullback",
+    "name": "Sidelying Adductor Pullback",
+    "muscleGroups": ["adductors", "hipFlexors"],
+    "equipment": "bodyweight",
+    "instructions": "Improves internal rotation of the hip while promoting opening of the back side of the pelvis.\n\n1. Lie on your side\n2. Pull top knee back while keeping hips stacked\n3. Focus on feeling inner thigh engagement\n4. 5 breaths per side\n\nDoing it right:\n- You only feel your top side's inner thigh (and maybe a little bit of your outside glute)\n- You don't feel the side of your top side's hip engage\n- You can keep your low back & neck relaxed",
+    "videoURL": "https://www.youtube.com/watch?v=HRtWaxtyn-I",
+    "bundledVideoFilename": "sidelying-adductor-pullback.mp4"
+  },
+  {
+    "id": "sidelying-glute-max",
+    "name": "Sidelying Glute Max",
+    "muscleGroups": ["glutes", "abductors"],
+    "equipment": "bodyweight",
+    "instructions": "Improves hip external rotation. Creates coordination between foot arch and glute activation. Improves ability to turn pelvis towards bottom side.\n\n1. Lie on your side with feet against wall\n2. Press top foot arch firmly into wall\n3. Engage top-side glute\n4. 8 breaths on both sides\n\nDoing it right:\n- You only feel your top-side glute and bottom-side abs working (maybe a bit of bottom-side inner thigh)\n- You feel your top-side foot arch firmly against wall\n- Your neck and low back are relaxed",
+    "videoURL": "https://youtu.be/w4DkkdHwc5U",
+    "bundledVideoFilename": "sidelying-glute-max.mp4"
+  },
+  {
+    "id": "calf-raise-progression",
+    "name": "Calf Raise Progression",
+    "muscleGroups": ["calves", "glutes"],
+    "equipment": "bodyweight",
+    "instructions": "Strengthens muscles that help raise the foot arch properly. Improves end-range hip extension, which is very important for better gait & push-off mechanics.\n\nNote: Start with Progression #1 and you can move on once you can do 2 sets of 15 perfect reps without much fatigue.\n\n1. Stand on one leg (or both for easier progression)\n2. Rise up onto toes slowly\n3. Lower with control\n4. 6-12 slow reps per side (whatever is achievable for the progression you're on)\n\nDoing it right:\n- You can maintain proper contact of the base of your big toe and little toe throughout 100% of the range of motion\n- You feel your calves working without any pain in your foot or knee",
+    "videoURL": "https://youtu.be/8Z0I4RJRaeY",
+    "bundledVideoFilename": "calf-raise-progression.mp4"
+  },
+  {
+    "id": "front-foot-elevated-hinged-split-squat",
+    "name": "Front Foot Elevated Hinged Split Squat",
+    "muscleGroups": ["hamstrings", "glutes", "quads"],
+    "equipment": "bodyweight",
+    "instructions": "Strengthens glutes, hamstrings, and overall posterior chain muscles. Improves the ability to shift into your hips without low back taking over.\n\n1. Place front foot on a small elevation\n2. Hinge forward slightly at the hips\n3. Lower into a split squat position\n4. 8-10 slow reps per side, making sure you end each set knowing you could do 1 more PERFECT rep\n\nDoing it right:\n- You can maintain proper contact of your heel, base of big toe, and base of little toe throughout 100% of the range of motion\n- You feel a stretch in the back side of your hip (maybe a bit on the side) and none in the front\n- You feel your glutes working significantly as you stand up",
+    "videoURL": "https://youtu.be/kyeuRVoAbuo",
+    "bundledVideoFilename": "front-foot-elevated-hinged-split-squat.mp4"
+  },
+  {
+    "id": "introductory-sidelying-abduct-shift",
+    "name": "Introductory Sidelying Abduct & Shift",
+    "muscleGroups": ["abductors", "glutes", "abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "My favorite drill for beginning to improve the ability to shift out of one side and into another.\n\n1. Lie on your side\n2. Lift top leg (abduct) while shifting pelvis\n3. Focus on feeling top-side glute and bottom-side abs\n4. 5-8 breaths both sides\n\nDoing it right:\n- You only feel your top-side glute and bottom-side abs working (maybe a bit of bottom-side inner thigh)\n- Your neck and low back are relaxed\n- Your low ribs aren't flaring up",
+    "videoURL": "https://youtu.be/fyNs7lBsIGs",
+    "bundledVideoFilename": "introductory-sidelying-abduct-and-shift.mp4"
+  },
+  {
+    "id": "pri-short-kneeling-alternating-crossovers",
+    "name": "PRI Short Kneeling Alternating Crossovers",
+    "muscleGroups": ["obliques", "abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "Improves trunk rotation. Decompresses ribcage & shoulders. Do this if you have extra time. If not, stick to the first 3 drills.\n\n1. Kneel in a short-kneeling position\n2. Reach across body alternating sides\n3. Focus on rotation through ribcage\n4. 5 breaths per side\n\nDoing it right:\n- You feel your back ribs on the back reaching side open up a bit upon inhalation\n- You feel your front ribs on the front reaching side open up a bit upon inhalation\n- You feel the side abs on the side you're turning to (side of the back reaching arm)",
+    "videoURL": "https://youtu.be/n_LPEA32rks",
+    "bundledVideoFilename": "pri-short-kneeling-alternating-crossovers.mp4"
+  },
+  {
+    "id": "banded-supine-d2-flexion",
+    "name": "Banded Supine D2 Flexion",
+    "muscleGroups": ["shoulders"],
+    "equipment": "bands",
+    "instructions": "Improves entire arc of shoulder mobility. Now that the body has more alignment, it's now appropriate to train full range of motion.\n\n1. Lie on back with a resistance band\n2. Perform D2 flexion pattern (diagonal arm movement)\n3. 10-15 reps per side\n\nDoing it right:\n- You feel like your low back is always flat and relaxed during the movement (at any point)\n- You feel muscles on the back side of your lower shoulder blade working",
+    "videoURL": "https://youtu.be/mbQt8fjJrzQ",
+    "bundledVideoFilename": "banded-supine-d2-flexion.mp4"
+  },
+  {
+    "id": "kickstand-hinge",
+    "name": "Kickstand Hinge",
+    "muscleGroups": ["glutes", "hamstrings"],
+    "equipment": "bodyweight",
+    "instructions": "Improves the ability to dynamically shift in and out of your hips. Improves coordination and proper activation of glutes.\n\n1. Stand with one foot slightly behind (kickstand position)\n2. Hinge at hips pushing them back\n3. Keep back flat\n4. 8-10 slow reps per side, making sure you end each set knowing you could do 1 more PERFECT rep\n\nDoing it right:\n- You can maintain proper contact of your heel, base of big toe, and base of little toe throughout 100% of the range of motion\n- You feel a stretch in the back side of your hip (maybe a bit on the side) and none in the front\n- You feel your glutes working significantly as you stand up",
+    "videoURL": "https://youtu.be/rvmBn23ej8I",
+    "bundledVideoFilename": "kickstand-hinge.mp4"
+  },
+  {
+    "id": "sidelying-abduct-shift",
+    "name": "Sidelying Abduct & Shift",
+    "muscleGroups": ["abductors", "glutes", "abdominals"],
+    "equipment": "bodyweight",
+    "instructions": "A more progressed version of the exercise from Phase 3. Very important: Make sure to master the initial progressions before moving on. Do not rush this.\n\n1. Lie on your side\n2. Perform abduction with pelvic shift (advanced version)\n3. 5-8 breaths each side\n\nDoing it right:\n- You only feel your top-side glute and bottom-side abs working (maybe a bit of bottom-side inner thigh)\n- Your neck and low back are relaxed\n- Your low ribs aren't flaring up",
+    "videoURL": "https://youtu.be/8k7EST347Wg",
+    "bundledVideoFilename": "sidelying-abduct-and-shift.mp4"
   }
 ]

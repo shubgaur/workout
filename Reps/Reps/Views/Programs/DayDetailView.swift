@@ -60,7 +60,53 @@ struct DayDetailView: View {
         guard let template = day.workoutTemplate else { return }
 
         let session = WorkoutSession(template: template, programDay: day)
+        // Set default name from program context
+        if let week = day.week,
+           let phase = week.phase,
+           let program = phase.program {
+            session.name = "\(program.name) · W\(week.weekNumber)D\(day.dayNumber)"
+        }
         modelContext.insert(session)
+
+        // Deep copy exercise groups from template into session
+        for group in template.sortedExerciseGroups {
+            let sessionGroup = ExerciseGroup(
+                groupType: group.groupType,
+                order: group.order,
+                name: group.name,
+                notes: group.notes
+            )
+            sessionGroup.workoutSession = session
+
+            for exercise in group.sortedExercises {
+                let sessionExercise = WorkoutExercise(
+                    order: exercise.order,
+                    isOptional: exercise.isOptional,
+                    notes: exercise.notes,
+                    restSeconds: exercise.restSeconds
+                )
+                sessionExercise.exercise = exercise.exercise
+                sessionExercise.exerciseGroup = sessionGroup
+
+                for setTemplate in exercise.sortedSetTemplates {
+                    let loggedSet = LoggedSet(
+                        setNumber: setTemplate.setNumber,
+                        setType: setTemplate.setType
+                    )
+                    if let targetTime = setTemplate.targetTime {
+                        loggedSet.time = targetTime
+                    }
+                    if let targetReps = setTemplate.targetReps {
+                        loggedSet.reps = targetReps
+                    }
+                    loggedSet.side = setTemplate.side
+                    loggedSet.workoutExercise = sessionExercise
+                    sessionExercise.loggedSets.append(loggedSet)
+                }
+                sessionGroup.exercises.append(sessionExercise)
+            }
+            session.exerciseGroups.append(sessionGroup)
+        }
 
         activeWorkoutSession = session
     }
@@ -230,7 +276,14 @@ struct ExerciseGroupCard: View {
 
             // Exercises in group
             ForEach(group.sortedExercises) { workoutExercise in
-                WorkoutExerciseRow(workoutExercise: workoutExercise)
+                if let exercise = workoutExercise.exercise {
+                    NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                        WorkoutExerciseRow(workoutExercise: workoutExercise)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    WorkoutExerciseRow(workoutExercise: workoutExercise)
+                }
             }
         }
         .padding(RepsTheme.Spacing.md)
@@ -258,6 +311,35 @@ struct ExerciseGroupCard: View {
 struct WorkoutExerciseRow: View {
     let workoutExercise: WorkoutExercise
 
+    private var setsSummary: String {
+        let sets = workoutExercise.sortedSetTemplates
+        guard !sets.isEmpty else { return "No sets" }
+
+        let setCount = sets.count
+        let firstSet = sets[0]
+
+        var parts: [String] = []
+        parts.append("\(setCount) set\(setCount == 1 ? "" : "s")")
+
+        if let reps = firstSet.targetReps {
+            parts.append("x \(reps) reps")
+        } else if let time = firstSet.targetTime {
+            let minutes = time / 60
+            let seconds = time % 60
+            if minutes > 0 {
+                parts.append("x \(minutes):\(String(format: "%02d", seconds))")
+            } else {
+                parts.append("x \(seconds)s")
+            }
+        }
+
+        if let notes = firstSet.notes, !notes.isEmpty {
+            parts.append("· \(notes)")
+        }
+
+        return parts.joined(separator: " ")
+    }
+
     var body: some View {
         HStack(spacing: RepsTheme.Spacing.sm) {
             // Exercise image placeholder
@@ -275,14 +357,23 @@ struct WorkoutExerciseRow: View {
                     .font(RepsTheme.Typography.body)
                     .foregroundStyle(RepsTheme.Colors.text)
 
-                // Sets summary
-                let setCount = workoutExercise.setTemplates.count
-                Text("\(setCount) set\(setCount == 1 ? "" : "s")")
+                Text(setsSummary)
                     .font(RepsTheme.Typography.caption)
                     .foregroundStyle(RepsTheme.Colors.textSecondary)
+
+                if let notes = workoutExercise.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(RepsTheme.Typography.caption)
+                        .foregroundStyle(RepsTheme.Colors.textTertiary)
+                        .lineLimit(2)
+                }
             }
 
             Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12))
+                .foregroundStyle(RepsTheme.Colors.textTertiary)
         }
     }
 }

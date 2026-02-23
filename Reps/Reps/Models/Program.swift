@@ -16,6 +16,7 @@ final class Program {
     @Attribute(.unique) var id: UUID
     var name: String
     var programDescription: String?
+    var programDetails: String?
     var createdAt: Date
     var updatedAt: Date
     var isActive: Bool
@@ -38,11 +39,13 @@ final class Program {
         id: UUID = UUID(),
         name: String,
         programDescription: String? = nil,
+        programDetails: String? = nil,
         isActive: Bool = false
     ) {
         self.id = id
         self.name = name
         self.programDescription = programDescription
+        self.programDetails = programDetails
         self.createdAt = Date()
         self.updatedAt = Date()
         self.isActive = isActive
@@ -79,11 +82,13 @@ final class Program {
         currentDay?.workoutTemplate
     }
 
-    /// Returns next scheduled date based on scheduledDays
+    /// Returns next scheduled date based on scheduledDays (empty = every day)
     var nextScheduledDate: Date? {
-        guard !scheduledDays.isEmpty else { return nil }
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
+        guard !scheduledDays.isEmpty else {
+            return today // Empty = daily, so today is always scheduled
+        }
         let currentWeekday = calendar.component(.weekday, from: today) - 1 // 0=Sun
 
         // Find next scheduled day
@@ -99,9 +104,9 @@ final class Program {
         return nil
     }
 
-    /// Check if today is a scheduled training day
+    /// Check if today is a scheduled training day (empty = every day)
     var isScheduledToday: Bool {
-        guard !scheduledDays.isEmpty else { return false }
+        guard !scheduledDays.isEmpty else { return true }
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: Date()) - 1 // 0=Sun
         return scheduledDays.contains(weekday)
@@ -136,9 +141,15 @@ final class Program {
         return count
     }
 
-    /// Human-readable progress string
+    /// Human-readable progress string including phase name
     var progressDescription: String {
-        "Week \(currentWeekIndex + 1), Day \(currentDayIndex + 1)"
+        let sorted = sortedPhases
+        if currentPhaseIndex >= 0 && currentPhaseIndex < sorted.count {
+            let phaseName = sorted[currentPhaseIndex].name
+                .replacingOccurrences(of: #"Phase \d+:\s*"#, with: "", options: .regularExpression)
+            return "\(phaseName) · Week \(currentWeekIndex + 1), Day \(currentDayIndex + 1)"
+        }
+        return "Week \(currentWeekIndex + 1), Day \(currentDayIndex + 1)"
     }
 
     var sortedPhases: [Phase] {
