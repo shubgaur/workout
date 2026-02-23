@@ -9,7 +9,9 @@ enum HistoryFilter: String, CaseIterable {
 
 struct HistoryListView: View {
     @Query(sort: \WorkoutSession.startTime, order: .reverse) private var allWorkouts: [WorkoutSession]
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedFilter: HistoryFilter = .all
+    @State private var workoutToDelete: WorkoutSession?
 
     // Cached computed values for performance
     @State private var cachedWorkouts: [WorkoutSession] = []
@@ -76,6 +78,23 @@ struct HistoryListView: View {
             }
             .onChange(of: selectedFilter) { _, _ in
                 refreshWorkouts()
+            }
+            .alert("Delete Workout?", isPresented: Binding(
+                get: { workoutToDelete != nil },
+                set: { if !$0 { workoutToDelete = nil } }
+            )) {
+                Button("Cancel", role: .cancel) {
+                    workoutToDelete = nil
+                }
+                Button("Delete", role: .destructive) {
+                    if let workout = workoutToDelete {
+                        modelContext.delete(workout)
+                        workoutToDelete = nil
+                        refreshWorkouts()
+                    }
+                }
+            } message: {
+                Text("This will permanently delete this workout and all its data.")
             }
         }
     }
@@ -156,6 +175,13 @@ struct HistoryListView: View {
                                     WorkoutHistoryCell(workout: workout)
                                 }
                                 .buttonStyle(ScalingPressButtonStyle())
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        workoutToDelete = workout
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                     }
@@ -198,6 +224,12 @@ struct HistoryListView: View {
 struct WorkoutHistoryCell: View {
     let workout: WorkoutSession
 
+    @Query private var allSettings: [UserSettings]
+
+    private var weightLabel: String {
+        allSettings.first?.weightUnit.displayName ?? "lbs"
+    }
+
     var body: some View {
         HStack(spacing: RepsTheme.Spacing.md) {
             VStack(alignment: .leading, spacing: RepsTheme.Spacing.sm) {
@@ -238,7 +270,7 @@ struct WorkoutHistoryCell: View {
                 // Stats row
                 HStack(spacing: RepsTheme.Spacing.lg) {
                     StatPill(icon: "clock", value: workout.formattedDuration)
-                    StatPill(icon: "scalemass", value: "\(Int(workout.totalVolume)) lbs")
+                    StatPill(icon: "scalemass", value: "\(Int(workout.totalVolume)) \(weightLabel)")
                     StatPill(icon: "checkmark.circle", value: "\(workout.completedSets) sets")
                 }
 

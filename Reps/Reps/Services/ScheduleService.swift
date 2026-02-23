@@ -6,19 +6,21 @@ struct ScheduleService {
 
     // MARK: - Schedule Queries
 
-    /// Check if today is a scheduled training day
+    /// Check if today is a scheduled training day (empty scheduledDays = every day)
     static func isScheduledToday(_ program: Program) -> Bool {
-        guard !program.scheduledDays.isEmpty else { return false }
+        guard !program.scheduledDays.isEmpty else { return true }
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: Date()) - 1 // 0=Sun
         return program.scheduledDays.contains(weekday)
     }
 
-    /// Get next scheduled training date
+    /// Get next scheduled training date (empty scheduledDays = tomorrow)
     static func nextScheduledDate(_ program: Program) -> Date? {
-        guard !program.scheduledDays.isEmpty else { return nil }
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
+        guard !program.scheduledDays.isEmpty else {
+            return calendar.date(byAdding: .day, value: 1, to: today)
+        }
         let currentWeekday = calendar.component(.weekday, from: today) - 1
 
         for offset in 1..<8 {
@@ -113,14 +115,6 @@ struct ScheduleService {
 
         // Advance to next day
         advanceToNextDay(program)
-    }
-
-    /// Push entire remaining schedule back by N days
-    static func pushScheduleBack(_ program: Program, days: Int) {
-        // Adjust scheduled days by shifting forward
-        // This effectively delays when the next workout occurs
-        // The scheduled days pattern remains the same
-        program.updatedAt = Date()
     }
 
     // MARK: - Pause/Resume

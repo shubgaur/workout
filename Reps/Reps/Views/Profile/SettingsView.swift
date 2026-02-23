@@ -141,6 +141,19 @@ struct SettingsView: View {
                     .foregroundStyle(RepsTheme.Colors.textSecondary)
             }
 
+            // Support Section
+            Section {
+                NavigationLink {
+                    HelpView()
+                } label: {
+                    Label("Help & Tips", systemImage: "questionmark.circle")
+                }
+                .listRowBackground(RepsTheme.Colors.surface)
+            } header: {
+                Text("Support")
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+            }
+
             // About Section
             Section {
                 HStack {

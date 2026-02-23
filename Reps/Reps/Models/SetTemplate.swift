@@ -11,6 +11,7 @@ final class SetTemplate {
     var targetDistance: Double? // meters
     var targetTime: Int? // seconds
     var targetRPE: Int? // 1-10
+    var side: SetSide? // nil = both/bilateral, .left, .right
     var notes: String?
 
     @Relationship var workoutExercise: WorkoutExercise?
@@ -24,6 +25,7 @@ final class SetTemplate {
         targetDistance: Double? = nil,
         targetTime: Int? = nil,
         targetRPE: Int? = nil,
+        side: SetSide? = nil,
         notes: String? = nil
     ) {
         self.id = id
@@ -34,6 +36,7 @@ final class SetTemplate {
         self.targetDistance = targetDistance
         self.targetTime = targetTime
         self.targetRPE = targetRPE
+        self.side = side
         self.notes = notes
     }
 

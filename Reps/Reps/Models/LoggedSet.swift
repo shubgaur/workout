@@ -15,6 +15,7 @@ final class LoggedSet {
     var distance: Double? // meters
     var time: Int? // seconds
     var rpe: Int? // 1-10
+    var side: SetSide? // nil = both/bilateral, .left, .right
 
     // Reference to previous (for "PREVIOUS" column display)
     var previousReps: Int?

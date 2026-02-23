@@ -8,12 +8,18 @@ struct ProgramDetailView: View {
     @State private var showingEditProgram = false
     @State private var showingActivationSheet = false
     @State private var activeWorkoutSession: WorkoutSession?
+    @State private var showingProgramDetails = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: RepsTheme.Spacing.lg) {
                 // Header
                 headerSection
+
+                // Program Details (if available)
+                if let details = program.programDetails, !details.isEmpty {
+                    programDetailsSection(details)
+                }
 
                 // Start Program Button
                 startProgramButton
@@ -52,6 +58,9 @@ struct ProgramDetailView: View {
                         .foregroundStyle(RepsTheme.Colors.accent)
                 }
             }
+        }
+        .sheet(isPresented: $showingEditProgram) {
+            ProgramEditSheet(program: program)
         }
         .sheet(isPresented: $showingActivationSheet) {
             ProgramActivationSheet(program: program)
@@ -104,6 +113,43 @@ struct ProgramDetailView: View {
             .padding(.top, RepsTheme.Spacing.xs)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(RepsTheme.Spacing.md)
+        .background(RepsTheme.Colors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: RepsTheme.Radius.md)
+                .stroke(RepsTheme.Colors.border, lineWidth: 1)
+        )
+    }
+
+    // MARK: - Program Details
+
+    private func programDetailsSection(_ details: String) -> some View {
+        VStack(alignment: .leading, spacing: RepsTheme.Spacing.sm) {
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showingProgramDetails.toggle()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "book.closed")
+                        .foregroundStyle(RepsTheme.Colors.accent)
+                    Text("Program Details")
+                        .font(RepsTheme.Typography.headline)
+                        .foregroundStyle(RepsTheme.Colors.text)
+                    Spacer()
+                    Image(systemName: showingProgramDetails ? "chevron.up" : "chevron.down")
+                        .foregroundStyle(RepsTheme.Colors.textTertiary)
+                        .font(.system(size: 12))
+                }
+            }
+            .buttonStyle(.plain)
+
+            if showingProgramDetails {
+                MarkdownText(details)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
         .padding(RepsTheme.Spacing.md)
         .background(RepsTheme.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.md))
@@ -339,6 +385,11 @@ struct DayPill: View {
     private var displayName: String {
         if isRestDay {
             return "Rest"
+        }
+        // Prefer day name (e.g. "Day 1") over template name
+        let dayName = day.name
+        if !dayName.isEmpty && dayName != "Daily Routine" {
+            return dayName
         }
         return day.workoutTemplate?.name ?? "Day \(dayNumber)"
     }

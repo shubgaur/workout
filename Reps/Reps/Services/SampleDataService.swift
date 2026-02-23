@@ -238,12 +238,15 @@ final class SampleDataService {
     func seedSampleProgram() async throws {
         logger.info("Seeding sample program...")
 
-        // Check if we already have programs
-        let programDescriptor = FetchDescriptor<Program>()
+        // Check if PPL program already exists by name so other programs can coexist
+        let pplName = "Push Pull Legs"
+        let programDescriptor = FetchDescriptor<Program>(
+            predicate: #Predicate { $0.name == pplName }
+        )
         let existingCount = try modelContext.fetchCount(programDescriptor)
 
         guard existingCount == 0 else {
-            logger.debug("Sample program already exists")
+            logger.debug("Push Pull Legs program already exists")
             return
         }
 
@@ -452,6 +455,39 @@ final class SampleDataService {
         default:
             break
         }
+    }
+
+    // MARK: - Beginner Body Restoration Program
+
+    /// Seeds the "Beginner Body Restoration" corrective exercise program from JSON
+    func seedBeginnerBodyRestoration() async throws {
+        logger.info("Seeding Beginner Body Restoration program...")
+
+        let bbrName = "Beginner Body Restoration"
+        let descriptor = FetchDescriptor<Program>(
+            predicate: #Predicate { $0.name == bbrName }
+        )
+        let existing = try modelContext.fetch(descriptor)
+
+        // Delete and re-seed to pick up structural changes
+        if !existing.isEmpty {
+            for program in existing {
+                modelContext.delete(program)
+            }
+            try modelContext.save()
+            logger.info("Deleted existing BBR program for re-seed")
+        }
+
+        // Import from bundled JSON
+        guard let url = Bundle.main.url(forResource: "bbr-program", withExtension: "json") else {
+            logger.error("bbr-program.json not found in bundle")
+            return
+        }
+
+        let importService = ImportService(modelContext: modelContext)
+        _ = try await importService.importProgram(from: url)
+
+        logger.info("Successfully seeded Beginner Body Restoration program from JSON")
     }
 
     /// Clears all sample data (for reset)

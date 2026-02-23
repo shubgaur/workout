@@ -40,7 +40,17 @@ final class WorkoutSession {
     }
 
     var displayName: String {
-        name ?? template?.name ?? "Quick Workout"
+        if let name = name, !name.isEmpty { return name }
+
+        // Build from program context: "Program · W1D3"
+        if let day = programDay,
+           let week = day.week,
+           let phase = week.phase,
+           let program = phase.program {
+            return "\(program.name) · W\(week.weekNumber)D\(day.dayNumber)"
+        }
+
+        return template?.name ?? "Quick Workout"
     }
 
     var totalVolume: Double {

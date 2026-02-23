@@ -1,12 +1,33 @@
 import SwiftUI
 import SwiftData
+import AVFoundation
 
 struct ExerciseCard: View {
     @Bindable var exercise: WorkoutExercise
     var onSetCompleted: (LoggedSet) -> Void
 
+    @Query private var allSettings: [UserSettings]
     @State private var exerciseNotes = ""
     @State private var showingNotes = false
+
+    private var weightLabel: String {
+        allSettings.first?.weightUnit.displayName.uppercased() ?? "LBS"
+    }
+
+    // Flexible column detection
+    private var hasTimeColumn: Bool {
+        exercise.sortedLoggedSets.contains { $0.time != nil }
+    }
+
+    private var hasWeightColumn: Bool {
+        exercise.sortedLoggedSets.contains { $0.weight != nil } ||
+        !exercise.sortedLoggedSets.contains { $0.time != nil }
+    }
+
+    private var hasRepsColumn: Bool {
+        exercise.sortedLoggedSets.contains { $0.reps != nil } ||
+        !exercise.sortedLoggedSets.contains { $0.time != nil }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,6 +69,15 @@ struct ExerciseCard: View {
             .padding(.horizontal, RepsTheme.Spacing.md)
             .padding(.top, RepsTheme.Spacing.md)
 
+            // Inline video player
+            if let videoURL = exercise.exercise?.effectiveVideoURL {
+                InlineVideoPlayer(url: videoURL)
+                    .frame(height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+                    .padding(.horizontal, RepsTheme.Spacing.md)
+                    .padding(.top, RepsTheme.Spacing.sm)
+            }
+
             // Notes field (expandable)
             if showingNotes || !exerciseNotes.isEmpty {
                 TextField("Add notes...", text: $exerciseNotes, axis: .vertical)
@@ -63,16 +93,24 @@ struct ExerciseCard: View {
                     }
             }
 
-            // Set table header
+            // Set table header - flexible columns
             HStack(spacing: 0) {
                 Text("SET")
                     .frame(width: Constants.Layout.setColumnWidth, alignment: .leading)
                 Text("PREVIOUS")
                     .frame(width: Constants.Layout.previousColumnWidth, alignment: .center)
-                Text("KG")
-                    .frame(maxWidth: .infinity)
-                Text("REPS")
-                    .frame(maxWidth: .infinity)
+                if hasTimeColumn {
+                    Text("TIME")
+                        .frame(maxWidth: .infinity)
+                }
+                if hasWeightColumn {
+                    Text(weightLabel)
+                        .frame(maxWidth: .infinity)
+                }
+                if hasRepsColumn {
+                    Text("REPS")
+                        .frame(maxWidth: .infinity)
+                }
                 Text("")
                     .frame(width: Constants.Layout.checkButtonSize)
             }
@@ -87,6 +125,10 @@ struct ExerciseCard: View {
                 SetRowView(
                     loggedSet: loggedSet,
                     allSets: exercise.sortedLoggedSets,
+                    hasTimeColumn: hasTimeColumn,
+                    hasWeightColumn: hasWeightColumn,
+                    hasRepsColumn: hasRepsColumn,
+                    weightLabel: weightLabel,
                     onCompleted: {
                         onSetCompleted(loggedSet)
                     }
@@ -119,9 +161,36 @@ struct ExerciseCard: View {
 
     private func addSet() {
         let newSetNumber = (exercise.loggedSets.map { $0.setNumber }.max() ?? 0) + 1
-        let set = LoggedSet(setNumber: newSetNumber)
-        set.workoutExercise = exercise
-        exercise.loggedSets.append(set)
+        let lastSet = exercise.sortedLoggedSets.last
+        let hasSides = exercise.loggedSets.contains { $0.side != nil }
+
+        if hasSides {
+            // Add L/R pair
+            let leftSet = LoggedSet(setNumber: newSetNumber)
+            leftSet.side = .left
+            leftSet.reps = lastSet?.reps
+            leftSet.weight = lastSet?.weight
+            leftSet.time = lastSet?.time
+            leftSet.workoutExercise = exercise
+            exercise.loggedSets.append(leftSet)
+
+            let rightSet = LoggedSet(setNumber: newSetNumber)
+            rightSet.side = .right
+            rightSet.reps = lastSet?.reps
+            rightSet.weight = lastSet?.weight
+            rightSet.time = lastSet?.time
+            rightSet.workoutExercise = exercise
+            exercise.loggedSets.append(rightSet)
+        } else {
+            let set = LoggedSet(setNumber: newSetNumber)
+            if let lastSet = lastSet {
+                set.reps = lastSet.reps
+                set.weight = lastSet.weight
+                set.time = lastSet.time
+            }
+            set.workoutExercise = exercise
+            exercise.loggedSets.append(set)
+        }
     }
 }
 
@@ -130,6 +199,10 @@ struct ExerciseCard: View {
 struct SetRowView: View {
     @Bindable var loggedSet: LoggedSet
     var allSets: [LoggedSet]
+    var hasTimeColumn: Bool
+    var hasWeightColumn: Bool
+    var hasRepsColumn: Bool
+    var weightLabel: String
     var onCompleted: () -> Void
 
     @FocusState private var weightFocused: Bool
@@ -137,16 +210,24 @@ struct SetRowView: View {
 
     @State private var weightText = ""
     @State private var repsText = ""
+    @State private var showingTimePicker = false
     @State private var showingPropagateAlert = false
     @State private var pendingPropagation: PropagationType?
+    @State private var hasAppeared = false
+
+    // Timer state
+    @State private var timerActive = false
+    @State private var timerRemaining: Int = 0
+    @State private var countdownTimer: Timer?
 
     private enum PropagationType {
         case weight(Double)
         case reps(Int)
+        case time(Int)
     }
 
     private var isFirstSet: Bool {
-        loggedSet.setNumber == 1
+        loggedSet.setNumber == 1 && loggedSet.side != .right
     }
 
     private var remainingSets: [LoggedSet] {
@@ -155,7 +236,7 @@ struct SetRowView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Set indicator
+            // Set indicator with side
             setIndicator
                 .frame(width: Constants.Layout.setColumnWidth, alignment: .leading)
 
@@ -165,53 +246,17 @@ struct SetRowView: View {
                 .foregroundStyle(RepsTheme.Colors.textTertiary)
                 .frame(width: Constants.Layout.previousColumnWidth, alignment: .center)
 
-            // Weight input
-            TextField("—", text: $weightText)
-                .keyboardType(.decimalPad)
-                .font(RepsTheme.Typography.mono)
-                .foregroundStyle(RepsTheme.Colors.text)
-                .multilineTextAlignment(.center)
-                .padding(RepsTheme.Spacing.sm)
-                .background(RepsTheme.Colors.surfaceElevated)
-                .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
-                .focused($weightFocused)
-                .frame(maxWidth: .infinity)
-                .onChange(of: weightText) { _, newValue in
-                    if let weight = Double(newValue) {
-                        loggedSet.weight = weight
-                        if isFirstSet && !remainingSets.isEmpty {
-                            pendingPropagation = .weight(weight)
-                            showingPropagateAlert = true
-                        }
-                    } else {
-                        loggedSet.weight = nil
-                    }
-                }
+            if hasTimeColumn {
+                timeCell
+            }
 
-            Spacer().frame(width: RepsTheme.Spacing.xs)
+            if hasWeightColumn {
+                weightCell
+            }
 
-            // Reps input
-            TextField("—", text: $repsText)
-                .keyboardType(.numberPad)
-                .font(RepsTheme.Typography.mono)
-                .foregroundStyle(RepsTheme.Colors.text)
-                .multilineTextAlignment(.center)
-                .padding(RepsTheme.Spacing.sm)
-                .background(RepsTheme.Colors.surfaceElevated)
-                .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
-                .focused($repsFocused)
-                .frame(maxWidth: .infinity)
-                .onChange(of: repsText) { _, newValue in
-                    if let reps = Int(newValue) {
-                        loggedSet.reps = reps
-                        if isFirstSet && !remainingSets.isEmpty {
-                            pendingPropagation = .reps(reps)
-                            showingPropagateAlert = true
-                        }
-                    } else {
-                        loggedSet.reps = nil
-                    }
-                }
+            if hasRepsColumn {
+                repsCell
+            }
 
             // Complete button
             Button {
@@ -233,6 +278,12 @@ struct SetRowView: View {
             if let reps = loggedSet.reps {
                 repsText = "\(reps)"
             }
+            DispatchQueue.main.async {
+                hasAppeared = true
+            }
+        }
+        .onDisappear {
+            stopCountdownTimer()
         }
         .alert("Apply to All Sets?", isPresented: $showingPropagateAlert) {
             Button("Just This Set", role: .cancel) {
@@ -244,7 +295,171 @@ struct SetRowView: View {
         } message: {
             Text("Apply this value to remaining sets?")
         }
+        .sheet(isPresented: $showingTimePicker) {
+            TimePickerSheet(seconds: Binding(
+                get: { loggedSet.time ?? 0 },
+                set: { newValue in
+                    loggedSet.time = newValue > 0 ? newValue : nil
+                    if hasAppeared && isFirstSet && !remainingSets.isEmpty && newValue > 0 {
+                        pendingPropagation = .time(newValue)
+                        showingPropagateAlert = true
+                    }
+                }
+            ))
+            .presentationDetents([.height(280)])
+        }
     }
+
+    // MARK: - Time Cell with Countdown Timer
+
+    private var timeCell: some View {
+        HStack(spacing: 2) {
+            // Time display - tappable to set time
+            Button { showingTimePicker = true } label: {
+                Text(timerActive ? formatTime(timerRemaining) : (loggedSet.time.map { formatTime($0) } ?? "---"))
+                    .font(RepsTheme.Typography.mono)
+                    .foregroundStyle(
+                        timerActive ? RepsTheme.Colors.accent :
+                        (loggedSet.time != nil ? RepsTheme.Colors.text : RepsTheme.Colors.textTertiary)
+                    )
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, RepsTheme.Spacing.sm)
+                    .background(RepsTheme.Colors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+            }
+            .buttonStyle(.plain)
+
+            // Timer play/pause button
+            if loggedSet.time != nil {
+                Button {
+                    toggleCountdownTimer()
+                } label: {
+                    Image(systemName: timerActive ? "pause.fill" : "play.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(timerActive ? RepsTheme.Colors.warning : RepsTheme.Colors.accent)
+                        .frame(width: 28, height: 28)
+                        .background(
+                            (timerActive ? RepsTheme.Colors.warning : RepsTheme.Colors.accent).opacity(0.15)
+                        )
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Weight Cell with +/- Steppers
+
+    private var weightCell: some View {
+        HStack(spacing: 2) {
+            // Minus button
+            Button {
+                adjustWeight(by: -5)
+            } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    .frame(width: 24, height: 28)
+                    .background(RepsTheme.Colors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.xs))
+            }
+            .buttonStyle(.plain)
+
+            // Weight input
+            TextField("---", text: $weightText)
+                .keyboardType(.decimalPad)
+                .font(RepsTheme.Typography.mono)
+                .foregroundStyle(RepsTheme.Colors.text)
+                .multilineTextAlignment(.center)
+                .padding(.vertical, RepsTheme.Spacing.sm)
+                .background(RepsTheme.Colors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+                .focused($weightFocused)
+                .onChange(of: weightText) { _, newValue in
+                    if let weight = Double(newValue) {
+                        loggedSet.weight = weight
+                        if hasAppeared && isFirstSet && !remainingSets.isEmpty {
+                            pendingPropagation = .weight(weight)
+                            showingPropagateAlert = true
+                        }
+                    } else {
+                        loggedSet.weight = nil
+                    }
+                }
+
+            // Plus button
+            Button {
+                adjustWeight(by: 5)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    .frame(width: 24, height: 28)
+                    .background(RepsTheme.Colors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.xs))
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Reps Cell with +/- Steppers
+
+    private var repsCell: some View {
+        HStack(spacing: 2) {
+            // Minus button
+            Button {
+                adjustReps(by: -1)
+            } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    .frame(width: 24, height: 28)
+                    .background(RepsTheme.Colors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.xs))
+            }
+            .buttonStyle(.plain)
+
+            // Reps input
+            TextField("---", text: $repsText)
+                .keyboardType(.numberPad)
+                .font(RepsTheme.Typography.mono)
+                .foregroundStyle(RepsTheme.Colors.text)
+                .multilineTextAlignment(.center)
+                .padding(.vertical, RepsTheme.Spacing.sm)
+                .background(RepsTheme.Colors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.sm))
+                .focused($repsFocused)
+                .onChange(of: repsText) { _, newValue in
+                    if let reps = Int(newValue) {
+                        loggedSet.reps = reps
+                        if hasAppeared && isFirstSet && !remainingSets.isEmpty {
+                            pendingPropagation = .reps(reps)
+                            showingPropagateAlert = true
+                        }
+                    } else {
+                        loggedSet.reps = nil
+                    }
+                }
+
+            // Plus button
+            Button {
+                adjustReps(by: 1)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                    .frame(width: 24, height: 28)
+                    .background(RepsTheme.Colors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: RepsTheme.Radius.xs))
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Propagation
 
     private func propagateValues() {
         guard let propagation = pendingPropagation else { return }
@@ -258,59 +473,210 @@ struct SetRowView: View {
             for otherSet in remainingSets {
                 otherSet.reps = reps
             }
+        case .time(let time):
+            for otherSet in remainingSets {
+                otherSet.time = time
+            }
         }
 
         pendingPropagation = nil
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 
+    // MARK: - Set Indicator
+
     private var setIndicator: some View {
         Group {
+            let sideLabel = loggedSet.side?.displayName ?? ""
             switch loggedSet.setType {
             case .warmup:
-                Text("W")
+                Text("W\(sideLabel)")
                     .font(RepsTheme.Typography.mono)
                     .foregroundStyle(RepsTheme.Colors.warning)
             case .working:
-                Text("\(loggedSet.setNumber)")
+                Text("\(loggedSet.setNumber)\(sideLabel)")
                     .font(RepsTheme.Typography.mono)
-                    .foregroundStyle(RepsTheme.Colors.text)
+                    .foregroundStyle(loggedSet.side != nil ? sideColor : RepsTheme.Colors.text)
             case .dropset:
-                Text("D")
+                Text("D\(sideLabel)")
                     .font(RepsTheme.Typography.mono)
                     .foregroundStyle(RepsTheme.Colors.error)
             case .failure:
-                Text("F")
+                Text("F\(sideLabel)")
                     .font(RepsTheme.Typography.mono)
                     .foregroundStyle(RepsTheme.Colors.error)
             case .amrap:
-                Text("A")
+                Text("A\(sideLabel)")
                     .font(RepsTheme.Typography.mono)
                     .foregroundStyle(RepsTheme.Colors.accent)
             case .restPause:
-                Text("R")
+                Text("R\(sideLabel)")
                     .font(RepsTheme.Typography.mono)
                     .foregroundStyle(RepsTheme.Colors.accent)
             }
         }
     }
 
+    private var sideColor: Color {
+        switch loggedSet.side {
+        case .left: return RepsTheme.Colors.accent
+        case .right: return RepsTheme.Colors.warning
+        case nil: return RepsTheme.Colors.text
+        }
+    }
+
     private var previousText: String {
-        if let prevReps = loggedSet.previousReps, let prevWeight = loggedSet.previousWeight {
+        if let prevWeight = loggedSet.previousWeight, let prevReps = loggedSet.previousReps {
             return "\(Int(prevWeight))x\(prevReps)"
         }
-        return "—"
+        return "---"
     }
+
+    // MARK: - Actions
 
     private func toggleCompleted() {
         loggedSet.isCompleted.toggle()
         if loggedSet.isCompleted {
-            // Haptic feedback
-            let generator = UIImpactFeedbackGenerator(style: .heavy)
-            generator.impactOccurred()
+            stopCountdownTimer()
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             onCompleted()
         } else {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+    }
+
+    private func adjustWeight(by amount: Double) {
+        let current = loggedSet.weight ?? 0
+        let newValue = max(0, current + amount)
+        loggedSet.weight = newValue
+        weightText = newValue.formatted(.number.precision(.fractionLength(0...1)))
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func adjustReps(by amount: Int) {
+        let current = loggedSet.reps ?? 0
+        let newValue = max(0, current + amount)
+        loggedSet.reps = newValue
+        repsText = "\(newValue)"
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    // MARK: - Countdown Timer
+
+    private func toggleCountdownTimer() {
+        if timerActive {
+            stopCountdownTimer()
+        } else {
+            startCountdownTimer()
+        }
+    }
+
+    private func startCountdownTimer() {
+        guard let time = loggedSet.time, time > 0 else { return }
+        timerRemaining = time
+        timerActive = true
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            DispatchQueue.main.async {
+                if timerRemaining > 0 {
+                    timerRemaining -= 1
+                    if timerRemaining == 0 {
+                        timerFinished()
+                    }
+                }
+            }
+        }
+    }
+
+    private func stopCountdownTimer() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        timerActive = false
+        timerRemaining = 0
+    }
+
+    private func timerFinished() {
+        stopCountdownTimer()
+
+        // Haptic buzz
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+
+        // Auto-complete the set
+        if !loggedSet.isCompleted {
+            loggedSet.isCompleted = true
+            onCompleted()
+        }
+
+        // Play system sound
+        AudioServicesPlaySystemSound(1007) // tri-tone
+    }
+
+    // MARK: - Time Formatting
+
+    private func formatTime(_ seconds: Int) -> String {
+        let mins = seconds / 60
+        let secs = seconds % 60
+        if mins > 0 {
+            return "\(mins):\(String(format: "%02d", secs))"
+        }
+        return "\(secs)s"
+    }
+}
+
+// MARK: - Time Picker Sheet
+
+struct TimePickerSheet: View {
+    @Binding var seconds: Int
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var selectedMinutes: Int = 0
+    @State private var selectedSeconds: Int = 0
+
+    var body: some View {
+        VStack(spacing: RepsTheme.Spacing.md) {
+            HStack {
+                Button("Cancel") { dismiss() }
+                    .foregroundStyle(RepsTheme.Colors.textSecondary)
+                Spacer()
+                Text("Set Time")
+                    .font(RepsTheme.Typography.headline)
+                    .foregroundStyle(RepsTheme.Colors.text)
+                Spacer()
+                Button("Done") {
+                    seconds = selectedMinutes * 60 + selectedSeconds
+                    dismiss()
+                }
+                .foregroundStyle(RepsTheme.Colors.accent)
+                .fontWeight(.semibold)
+            }
+            .padding(.horizontal, RepsTheme.Spacing.md)
+            .padding(.top, RepsTheme.Spacing.md)
+
+            HStack(spacing: 0) {
+                Picker("Minutes", selection: $selectedMinutes) {
+                    ForEach(0..<60) { min in
+                        Text("\(min) min").tag(min)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .frame(maxWidth: .infinity)
+
+                Picker("Seconds", selection: $selectedSeconds) {
+                    ForEach(0..<60) { sec in
+                        Text("\(sec) sec").tag(sec)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .frame(maxWidth: .infinity)
+            }
+            .frame(height: 160)
+        }
+        .background(RepsTheme.Colors.surface)
+        .onAppear {
+            selectedMinutes = seconds / 60
+            selectedSeconds = seconds % 60
         }
     }
 }
